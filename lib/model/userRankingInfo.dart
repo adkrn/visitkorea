@@ -1,0 +1,44 @@
+class UserRankingInfo {
+  final String rankBoardId;
+  final String rankGroupId;
+  final RankSNS sns;
+  final int ranking;
+  final int point;
+  String? mainBadgeName;
+
+  UserRankingInfo({
+    required this.rankBoardId,
+    required this.rankGroupId,
+    required this.sns,
+    required this.ranking,
+    required this.point,
+    this.mainBadgeName,
+  });
+
+  factory UserRankingInfo.fromJson(Map<String, dynamic> json) {
+    return UserRankingInfo(
+        rankBoardId: json['rankBoardId'],
+        rankGroupId: json['rankGroupId'],
+        sns: RankSNS.fromJson(json['sns']),
+        ranking: json['ranking'],
+        point: json['point']);
+  }
+
+  void setMainBadgeName(String name) {
+    mainBadgeName = name;
+  }
+}
+
+class RankSNS{
+  final String snsId;
+  final String name;
+
+  RankSNS({
+    required this.snsId,
+    required this.name,
+  });
+
+  factory RankSNS.fromJson(Map<String, dynamic> json){
+    return RankSNS(snsId: json['snsId'], name: json['name']);
+  }
+}
