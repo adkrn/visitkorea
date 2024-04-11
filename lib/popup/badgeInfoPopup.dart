@@ -73,27 +73,27 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
         print('downloadUrl is empty');
         return;
       }
+
+      if (userAgent.toLowerCase().contains('iphone') ||
+          userAgent.toLowerCase().contains('ipad')) {
+        print('iOS');
+        js.context.callMethod('downloadImageIos', [downloadUrl]);
+      } else if (userAgent.toLowerCase().contains('android')) {
+        js.context.callMethod('downloadImageAndroid', [downloadUrl]);
+        print('Android call method!');
+      } else if (userAgent.toLowerCase().contains('macintosh')) {
+        print('iOS');
+        js.context.callMethod('downloadImageIos', [downloadUrl]);
+      } else if (userAgent.toLowerCase().contains('ipod')) {
+        print('iOS');
+        js.context.callMethod('downloadImageIos', [downloadUrl]);
+      } else {
+        print('Other');
+        ShowCapturedWidget(image, downloadUrl);
+      }
     }).catchError((onError) {
       print(onError);
     });
-
-    if (userAgent.toLowerCase().contains('iphone') ||
-        userAgent.toLowerCase().contains('ipad')) {
-      print('iOS');
-      js.context.callMethod('downloadImageIos', [downloadUrl]);
-    } else if (userAgent.toLowerCase().contains('android')) {
-      js.context.callMethod('downloadImageAndroid', [downloadUrl]);
-      print('Android call method!');
-    } else if (userAgent.toLowerCase().contains('macintosh')) {
-      print('iOS');
-      js.context.callMethod('downloadImageIos', [downloadUrl]);
-    } else if (userAgent.toLowerCase().contains('ipod')) {
-      print('iOS');
-      js.context.callMethod('downloadImageIos', [downloadUrl]);
-    } else {
-      print('Other');
-      ShowCapturedWidget(image, downloadUrl);
-    }
   }
 
   @override
