@@ -29,7 +29,7 @@ class UserRankingInfo {
   }
 }
 
-class RankSNS{
+class RankSNS {
   final String snsId;
   final String name;
 
@@ -38,7 +38,38 @@ class RankSNS{
     required this.name,
   });
 
-  factory RankSNS.fromJson(Map<String, dynamic> json){
+  factory RankSNS.fromJson(Map<String, dynamic> json) {
     return RankSNS(snsId: json['snsId'], name: json['name']);
+  }
+}
+
+class RankGroups {
+  final String rankGroupId;
+  final String startDate;
+  final String endDate;
+  final String confirmDate;
+  final String intervalType;
+  final bool popupYn;
+  final DateTime createDate;
+
+  RankGroups(
+      {required this.rankGroupId,
+      required this.startDate,
+      required this.endDate,
+      required this.confirmDate,
+      required this.intervalType,
+      required this.popupYn,
+      required this.createDate});
+
+  factory RankGroups.fromJson(Map<String, dynamic> json) {
+    return RankGroups(
+      rankGroupId: json['rankGroupId'],
+      startDate: json['startDate'],
+      endDate: json['endDate'],
+      confirmDate: json['confirmDate'],
+      intervalType: json['intervalType'],
+      popupYn: json['popupYn'] == 'Y' ? true : false,
+      createDate: DateTime.parse(json['createDate']),
+    );
   }
 }

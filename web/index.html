@@ -38,6 +38,20 @@
   </script>
   <!-- This script adds the flutter initialization JS code -->
   <script src="flutter.js" defer></script>
+  <script>
+    function getUserAgent() {
+        return navigator.userAgent;
+    }
+  </script>
+  
+  <script>
+    function downloadImageIos(downloadUrl) {
+      const downloadLink = document.createElement("a");
+  downloadLink.href = "app://savePhoto?src="+downloadUrl;
+  downloadLink.download = 'image.png';
+  downloadLink.click();
+    }
+  </script>
 </head>
 <body>
   <script>
@@ -55,5 +69,6 @@
       });
     });
   </script>
+  <script src="main.dart.js" type="application/javascript"></script>
 </body>
 </html>

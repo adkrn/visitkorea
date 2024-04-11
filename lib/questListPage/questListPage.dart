@@ -16,7 +16,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:visitkorea/myBadgeCollections/myBadgeCollections.dart';
 import 'dart:js' as js;
 
-// 상수 정의
 const String _baseUrl = 'assets/';
 
 // 팝업메뉴 값
@@ -96,45 +95,6 @@ class _QuestListPageState extends State<QuestListPage> {
 void redirectToUrl(String url) {
   js.context.callMethod('open', [url, '_self']);
 }
-
-// List<Quest> filterQuests(List<Quest> quests) {
-//   List<Quest> filterQuest = List.from(quests);
-
-//   for (var quest in quests) {
-//     // 배지를 수령 완료한 퀘스트일때, 다음 등급의 퀘스트가 존재 하면 리스트에서 삭제
-//     if (quest.progressType == ProgressType.receive) {
-//       if (quest.questDetails.nextQuestId != null) {
-//         filterQuest.remove(quest);
-//       }
-//     } else {
-//       // 배지 수령이 안된 퀘스트들은 다음 등급의 퀘스트들이 노출되면 안된다.
-
-//       // 다음 등급의 퀘스트가 있을 때
-//       if (quest.questDetails.nextQuestId != null) {
-//         // 다음 등급의 퀘스트 id 저장
-//         String? nId = quest.questDetails.nextQuestId;
-
-//         while (nId != null) {
-//           // nid로 다음 등급의 퀘스트 찾아서 삭제
-//           var nQuest =
-//               quests.singleWhereOrNull((e) => e.questDetails.questId == nId);
-//           filterQuest.remove(nQuest);
-
-//           // 또 다음 등급의 퀘스트가 있는지 검색
-//           if (nQuest?.questDetails.nextQuestId == null) {
-//             break;
-//           }
-
-//           nId = nQuest?.questDetails.nextQuestId;
-//         }
-//       }
-//     }
-//   }
-
-//   filterQuest.sort(
-//       (a, b) => a.questDetails.orderIndex.compareTo(b.questDetails.orderIndex));
-//   return filterQuest;
-// }
 
 List<Quest> filterQuests(List<Quest> quests, List<Badge_completed> badges) {
   List<Quest> filterQuest = List.from(quests);

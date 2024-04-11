@@ -109,6 +109,7 @@ class _MobileLayoutState_questList extends State<MobileLayout_questList> {
             userPrivacyInfoProvider.isLoading) {
           return SizedBox();
         }
+
         // 퀘스트 타입에 맞게 리스트 불러오기
         List<Quest> quests = filterQuests(
             questProvider.questList
@@ -158,7 +159,8 @@ class _MobileLayoutState_questList extends State<MobileLayout_questList> {
 
         // 테스터 모드가 아닌 사용자는 테스트 퀘스트 삭제.
         if (userPrivacyInfoProvider.userPrivacyInfo.isBadgeTesterMode ==
-            false) {
+                false &&
+            questProvider.isLogin) {
           for (var quest in quests) {
             if (quest.questDetails.exposeStatus == ExposeStatus.testing) {
               quests.remove(quest);

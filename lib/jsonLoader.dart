@@ -74,7 +74,7 @@ class QuestProvider with ChangeNotifier {
 
     // 개발계에 올릴때 domain으로 수정해야함.
     var url = Uri.http(
-      '121.126.153.150:8080',
+      domain,
       '/quest-api/v1/quest-snses/search',
       queryParameters,
     );
@@ -425,8 +425,8 @@ class BadgeProvider with ChangeNotifier {
     //     'https://dev.ktovisitkorea.com/quest-api/v1/badge-snses/search?size=300');
 
     // 개발계에 올릴때 domain으로 수정해야됨.
-    var url = Uri.http('121.126.153.150:8080',
-        '/quest-api/v1/badge-snses/search', queryParameters);
+    var url =
+        Uri.http(domain, '/quest-api/v1/badge-snses/search', queryParameters);
     try {
       var response = await http.get(
         url,
@@ -535,9 +535,7 @@ Future<void> fetchSession() async {
   print('$domain/rewardPage/');
 
   userSession = UserSession(
-      sessionId: '',
-      snsId:
-          'f48926e6-af71-430b-98e5-4909e524e81d'); // 16aa6395-6bda-45d1-9111-395e45215249
+      sessionId: '', snsId: ''); // 16aa6395-6bda-45d1-9111-395e45215249
   print(userSession?.snsId);
   // f48926e6-af71-430b-98e5-4909e524e81d
   // b878e5c3-5e6f-43b9-a6dd-05d7571e0f77
@@ -581,17 +579,22 @@ Future<void> fetchSession() async {
 
 class RankingProvider with ChangeNotifier {
   List<UserRankingInfo> _userList = [];
+  late RankGroups _groupsInfo;
+
   bool _isLoading = false;
   List<UserRankingInfo> get userList => _userList;
+  RankGroups get groupsInfo => _groupsInfo;
 
   bool get isLoading => _isLoading;
 
   RankingProvider() {
-    fetchRankingList('M');
+    refreshData('M');
   }
+
   Future<void> refreshData(String intervalType) async {
     _isLoading = false;
-    await fetchRankingList(intervalType);
+    await Future.wait(
+        [fatchRankGroups(intervalType), fetchRankingList(intervalType)]);
     notifyListeners();
   }
 
@@ -606,7 +609,7 @@ class RankingProvider with ChangeNotifier {
 
   Future<void> fetchRankingList(String intervalType) async {
     if (_isLoading) return;
-
+    print('ranking Load Start');
     _isLoading = true;
     notifyListeners();
 
@@ -621,8 +624,8 @@ class RankingProvider with ChangeNotifier {
     //     '/quest-api/v1/sns-point-ranks', queryParameters);
 
     // 개발계 올리기전에 dev로 경로 수정해야함.
-    var url = Uri.http('121.126.153.150:8080',
-        '/quest-api/v1/rank-boards/search', queryParameters);
+    var url =
+        Uri.http(domain, '/quest-api/v1/rank-boards/search', queryParameters);
 
     print('ranking Load Start');
     try {
@@ -654,6 +657,44 @@ class RankingProvider with ChangeNotifier {
     } catch (e) {
       // 네트워크 오류 처리
       print('ranking Load Fail');
+      print('Error: $e');
+      _isLoading = false;
+      notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+    }
+  }
+
+  Future<void> fatchRankGroups(String intervalType) async {
+    if (_isLoading) return;
+
+    Map<String, dynamic> queryParameters = {
+      'intervalType': intervalType,
+    };
+
+    // 개발계 올리기전에 dev로 경로 수정해야함.
+    var url = Uri.http(
+        domain, '/quest-api/v1/rank-groups/latest-rank', queryParameters);
+
+    try {
+      var response = await http.get(
+        url,
+        headers: {
+          'SNS_ID': '${userSession?.snsId}',
+          'Cache-Control': 'no-store', // 캐시 방지
+          'Pragma': 'no-store', // 캐시 방지
+          'Expires': '0', // 캐시 방지
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+        _groupsInfo = RankGroups.fromJson(jsonResponse);
+        print('rankgroups Load Success');
+        _isLoading = false;
+        notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+      }
+    } catch (e) {
+      // 네트워크 오류 처리
+      print('rankgroups Load Fail');
       print('Error: $e');
       _isLoading = false;
       notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
@@ -700,16 +741,36 @@ class UserHistoryProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
 
   UserHistoryProvider() {
-    _fetchUserHistory();
+    fetchUserHistory('M');
   }
 
-  Future<void> refreshData() async {
+  Future<void> refreshData(String interval) async {
     _isLoading = false;
-    await _fetchUserHistory();
+    await fetchUserHistory(interval);
     notifyListeners();
   }
 
-  Future<void> _fetchUserHistory() async {
+  void setTimeStamp(String intervalType) {
+    DateTime now = DateTime.now();
+    DateTime startTime = intervalType == 'M'
+        ? DateTime(now.year, now.month, 1)
+        : DateTime(now.year, 1, 1);
+    DateTime lastDay = intervalType == 'M'
+        ? DateTime(now.year, now.month + 1, 1).subtract(Duration(days: 1))
+        : DateTime(now.year + 1, 1, 1).subtract(Duration(days: 1));
+
+    // 조건에 맞는 항목만 필터링하여 새 리스트를 생성
+    var filteredHistoryList = _historyList.where((history) {
+      // createTime이 startTime과 lastDay 사이인지 확인
+      return history.createDateTimeStamp.isAfter(startTime) &&
+          history.createDateTimeStamp.isBefore(lastDay);
+    }).toList();
+
+    // _historyList를 필터링된 리스트로 업데이트
+    _historyList = filteredHistoryList;
+  }
+
+  Future<void> fetchUserHistory(String interval) async {
     if (_isLoading) return;
 
     _isLoading = true;
@@ -742,6 +803,7 @@ class UserHistoryProvider with ChangeNotifier {
             .map((data) => UserHistory.fromJson(data))
             .toList();
         print('history List Load Success');
+        setTimeStamp(interval);
         _isLoading = false;
         notifyListeners();
       }
@@ -753,7 +815,7 @@ class UserHistoryProvider with ChangeNotifier {
     }
   }
 
-  Future<List<UserHistory>> fetchUserHistory() async {
+  Future<List<UserHistory>> _fetchUserHistory() async {
     String jsonString =
         await rootBundle.loadString('assets/userHistoryText.json');
     Map<String, dynamic> jsonResponse = jsonDecode(jsonString);
@@ -863,8 +925,8 @@ class UserPrivacyInfoProvider with ChangeNotifier {
       'timeStamp': DateTime.now().millisecondsSinceEpoch.toString()
     };
 
-    var url = Uri.http('121.126.153.150:8080', '/quest-api/v1/sns-quest-infos',
-        queryParameters);
+    var url =
+        Uri.http(domain, '/quest-api/v1/sns-quest-infos', queryParameters);
 
     try {
       var response = await http.get(
@@ -880,6 +942,7 @@ class UserPrivacyInfoProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
         _userPrivacyInfo = UserPrivacyInfo.fromJson(jsonResponse);
+        print('로드 성공');
         _isLoading = false;
         notifyListeners(); // 로딩 상태 업데이트
       } else {
@@ -902,6 +965,15 @@ class UserPrivacyInfoProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners(); // 로딩 상태 업데이트
     } finally {
+      _userPrivacyInfo = UserPrivacyInfo(
+        snsQuestInfoId: '',
+        isEventAgree: false,
+        isPrivacyAgree: false,
+        name: '',
+        phoneNumber: '',
+        isExposeRank: false,
+        isBadgeTesterMode: false,
+      );
       _isLoading = false;
       notifyListeners(); // 로딩 상태 업데이트
     }

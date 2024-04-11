@@ -52,11 +52,14 @@ class _IntroPageState extends State<IntroPage> {
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
                 child: Stack(children: [
-                  Image.asset(
-                    isMobile
-                        ? 'assets/introPage_Mobile.png'
-                        : 'assets/introPage_PC.png',
-                    fit: BoxFit.fill,
+                  SizedBox(
+                    width: screenWidth,
+                    child: Image.asset(
+                      isMobile
+                          ? 'assets/introPage_Mobile.png'
+                          : 'assets/introPage_PC.png',
+                      fit: BoxFit.cover,
+                    ),
                   ),
                   Positioned(
                       bottom: bottomPosition,

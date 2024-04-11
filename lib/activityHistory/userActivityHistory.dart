@@ -54,8 +54,16 @@ class UserHistoryTable extends StatefulWidget {
 
 class _UserHistoryTableState extends State<UserHistoryTable> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<UserHistoryProvider>(context, listen: false).refreshData('M');
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    Provider.of<UserHistoryProvider>(context, listen: false).refreshData();
+    Provider.of<UserHistoryProvider>(context, listen: false).refreshData('M');
     bool isMobile = MediaQuery.of(context).size.width < 1000;
 
     return Column(
@@ -80,6 +88,27 @@ class _UserHistoryTableState extends State<UserHistoryTable> {
                   child: buildText(
                       '회원코드:${Provider.of<UserInfoProvider>(context, listen: false).userInfo.indexId}',
                       TextType.h6),
+                )
+              ],
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            width: isMobile ? double.infinity : 940,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CustomDropdownMenu(
+                  menuItems: ['월간', '연간'],
+                  initialValue: '월간',
+                  isEnable: true,
+                  onItemSelected: (String selectedValue) {
+                    Provider.of<UserHistoryProvider>(context, listen: false)
+                        .refreshData(selectedValue == '월간' ? 'M' : 'Y');
+                  },
                 )
               ],
             ),
@@ -113,6 +142,7 @@ class _UserHistoryTableState extends State<UserHistoryTable> {
                     bottom: BorderSide(color: Color(0xFFEAEAEA)),
                   )),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -125,6 +155,7 @@ class _UserHistoryTableState extends State<UserHistoryTable> {
                       SizedBox(
                         width: isMobile ? 104 : desckTopWidthSize,
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [

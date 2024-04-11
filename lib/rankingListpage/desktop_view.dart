@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import 'package:visitkorea/model/userRankingInfo.dart';
 import 'package:provider/provider.dart';
 import 'package:visitkorea/jsonLoader.dart';
-import '../main.dart';
 
 class DesktopLayout_rankingList extends StatefulWidget {
   @override
@@ -101,8 +100,7 @@ class _DesktopLayoutState_rankingList extends State<DesktopLayout_rankingList> {
                   isEnable: true,
                   onItemSelected: (String selectedValue) {
                     //print("선택된 값: $selectedValue");
-                    provider
-                        .fetchRankingList(selectedValue == '월간' ? 'M' : 'Y');
+                    provider.refreshData(selectedValue == '월간' ? 'M' : 'Y');
                   },
                 ),
               ],
@@ -259,11 +257,18 @@ class _DesktopLayoutState_rankingList extends State<DesktopLayout_rankingList> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          buildText(
-            '현재 랭킹 : 2023년 11월 30일 17:00 기준 ',
-            TextType.p14R,
-            textColor: const Color(0xFF7D7D7D),
-          ),
+          Consumer<RankingProvider>(
+            builder: (context, value, child) {
+              DateTime dateTime = DateTime.parse(value.groupsInfo.confirmDate);
+              String formattedString =
+                  DateFormat("yyyy년 MM월 dd일 HH시mm분").format(dateTime);
+              return buildText(
+                '현재 랭킹 : $formattedString 기준 ',
+                TextType.p12R,
+                textColor: const Color(0xFF7D7D7D),
+              );
+            },
+          )
         ],
       ),
     );

@@ -1,52 +1,41 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-/// Flutter code sample for [ElevatedButton].
+class Test extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
 
-void main() => runApp(const ElevatedButtonExampleApp());
-
-class ElevatedButtonExampleApp extends StatelessWidget {
-  const ElevatedButtonExampleApp({super.key});
+class _MyAppState extends State<Test> {
+  double _scale = 1.0;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: const Text('ElevatedButton Sample')),
-        body: const ElevatedButtonExample(),
-      ),
-    );
-  }
-}
-
-class ElevatedButtonExample extends StatefulWidget {
-  const ElevatedButtonExample({super.key});
-
-  @override
-  State<ElevatedButtonExample> createState() => _ElevatedButtonExampleState();
-}
-
-class _ElevatedButtonExampleState extends State<ElevatedButtonExample> {
-  @override
-  Widget build(BuildContext context) {
-    final ButtonStyle style =
-        ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20));
-
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          ElevatedButton(
-            style: style,
-            onPressed: null,
-            child: const Text('Disabled'),
+        body: Listener(
+          onPointerSignal: (pointerSignal) {
+            if (pointerSignal is PointerScrollEvent) {
+              final ctrlHeld = pointerSignal.buttons == kSecondaryMouseButton;
+              // Ctrl 키가 눌려있는지 확인합니다.
+              if (ctrlHeld) {
+                setState(() {
+                  // 마우스 휠을 위로 움직이면 줌 인, 아래로 움직이면 줌 아웃합니다.
+                  _scale += pointerSignal.scrollDelta.dy * -0.01;
+                  // 스케일 값을 적절한 범위 내로 제한합니다.
+                  _scale = _scale.clamp(0.5, 5.0);
+                });
+              }
+            }
+          },
+          child: Transform.scale(
+            scale: _scale,
+            child: Center(
+              child: Text('Ctrl + Scroll to zoom in/out'),
+            ),
           ),
-          const SizedBox(height: 30),
-          ElevatedButton(
-            style: style,
-            onPressed: () {},
-            child: const Text('Enabled'),
-          ),
-        ],
+        ),
       ),
     );
   }

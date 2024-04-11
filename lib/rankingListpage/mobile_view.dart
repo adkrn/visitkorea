@@ -87,8 +87,7 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                   isEnable: true,
                   onItemSelected: (String selectedValue) {
                     //print("선택된 값: $selectedValue");
-                    provider
-                        .fetchRankingList(selectedValue == '월간' ? 'M' : 'Y');
+                    provider.refreshData(selectedValue == '월간' ? 'M' : 'Y');
                   },
                 ),
               ],
@@ -128,8 +127,10 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
           clipBehavior: Clip.none,
           children: [
             Container(
-              width: 114,
-              height: isNotTop ? 158 : 171,
+              //width: 114,
+              //height: isNotTop ? 158 : 171,
+              padding:
+                  EdgeInsets.only(top: 24, right: 16, left: 16, bottom: 16),
               decoration: ShapeDecoration(
                 color: Colors.white,
                 shape: RoundedRectangleBorder(
@@ -142,11 +143,10 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 24),
                   Container(
-                    width: isNotTop ? 64 : 80,
-                    height: isNotTop ? 64 : 80,
-                    padding: const EdgeInsets.all(20),
+                    width: isNotTop ? 60 : 80,
+                    height: isNotTop ? 60 : 80,
+                    padding: EdgeInsets.all(16),
                     clipBehavior: Clip.antiAlias,
                     decoration: ShapeDecoration(
                       color: const Color(0xFFF6F6F6),
@@ -155,10 +155,11 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                       ),
                     ),
                     child: SizedBox(
-                      width: isNotTop ? 32 : 40,
-                      height: isNotTop ? 32 : 40,
+                      //width: (isNotTop ? 32 : 40),
+                      //height: (isNotTop ? 32 : 40),
                       child: Image.asset(
                         'assets/userIcon.png',
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),
@@ -167,8 +168,6 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                       isEllipsis: true),
                   SizedBox(height: isNotTop ? 8 : 3),
                   Container(
-                    width: 77,
-                    height: 24,
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: ShapeDecoration(
@@ -187,10 +186,11 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                           width: 16,
                           height: 16,
                           clipBehavior: Clip.antiAlias,
-                          decoration: const BoxDecoration(),
+                          decoration: BoxDecoration(),
                           child: Image.asset(
                             'assets/Vector_step.png',
                             color: Colors.white,
+                            fit: BoxFit.contain,
                           ),
                         ),
                         const SizedBox(width: 4),
@@ -245,11 +245,18 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          buildText(
-            '현재 랭킹 : 2024년 04월 04일 기준 ',
-            TextType.p12R,
-            textColor: const Color(0xFF7D7D7D),
-          ),
+          Consumer<RankingProvider>(
+            builder: (context, value, child) {
+              DateTime dateTime = DateTime.parse(value.groupsInfo.confirmDate);
+              String formattedString =
+                  DateFormat("yyyy년 MM월 dd일 HH시mm분").format(dateTime);
+              return buildText(
+                '현재 랭킹 : $formattedString 기준 ',
+                TextType.p12R,
+                textColor: const Color(0xFF7D7D7D),
+              );
+            },
+          )
         ],
       ),
     );

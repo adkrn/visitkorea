@@ -404,7 +404,7 @@ enum TextType {
   /// P20 - 20px / 30px - Line Height / R 400
   p20R,
 
-  /// P18 - 20px / 28px - Line Height / R 400
+  /// P18 - 18px / 28px - Line Height / R 400
   p18R,
 
   /// P16 - 16px / Bold 700 / Line
@@ -447,11 +447,14 @@ Widget buildText(
   TextStyle getTextStyle() {
     TextStyle thisStyle;
     String font = 'NotoSansKR';
+    double autoSize = (screenSize / 390);
 
-    double font14AutoSize = 14 * (screenSize / 390);
+    double font14AutoSize = 14 * autoSize;
     if (font14AutoSize > 14) font14AutoSize = 14;
-    double fontH4AutoSize = 20 * (screenSize / 390);
+    double fontH4AutoSize = 20 * autoSize;
     if (fontH4AutoSize > 20) fontH4AutoSize = 20;
+    double font18AutoSize = 18 * autoSize;
+    if (font18AutoSize > 18) font18AutoSize = 18;
 
     switch (textType) {
       case TextType.h1:
@@ -489,7 +492,7 @@ Widget buildText(
       case TextType.h5:
         thisStyle = TextStyle(
             fontFamily: font,
-            fontSize: 18,
+            fontSize: isAutoSize ? font18AutoSize : 18,
             //height: 0.642857,
             color: textColor,
             fontWeight: FontWeight.w700);
@@ -521,7 +524,7 @@ Widget buildText(
       case TextType.p18R:
         thisStyle = TextStyle(
             fontFamily: font,
-            fontSize: 18,
+            fontSize: isAutoSize ? font18AutoSize : 18,
             //height: 0.642857,
             color: textColor,
             fontWeight: FontWeight.w400);

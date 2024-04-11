@@ -38,7 +38,7 @@ class _RankingListPageState extends State<RankingListPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showDialog(context);
+      if (provider.groupsInfo.popupYn) _showDialog(context);
     });
   }
 
@@ -201,10 +201,11 @@ Widget showRankingToolTipPopup(BuildContext context) {
 Widget showRankingNotEnteredPopup(BuildContext context) {
   var rankProvider = Provider.of<RankingProvider>(context, listen: false);
   var point = Provider.of<UserInfoProvider>(context, listen: false).userPoint;
-  bool isMobile = MediaQuery.of(context).size.width < 910;
+  double screenSize = MediaQuery.of(context).size.width;
+  bool isMobile = screenSize < 910;
   return Container(
     width: isMobile ? 358 : 450,
-    padding: const EdgeInsets.all(16),
+    padding: EdgeInsets.all(16 * (358 / screenSize)),
     clipBehavior: Clip.antiAlias,
     decoration: ShapeDecoration(
       color: Colors.white,
@@ -222,7 +223,9 @@ Widget showRankingNotEnteredPopup(BuildContext context) {
         buildText('이번달에는 랭킹전 순위권에 도전해보세요!', TextType.p16R),
         const SizedBox(height: 16),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: EdgeInsets.symmetric(
+              horizontal: 16 * (326 / screenSize),
+              vertical: 8 * (326 / screenSize)),
           decoration: ShapeDecoration(
             color: const Color(0xFFEDEFFB),
             shape:
@@ -238,18 +241,27 @@ Widget showRankingNotEnteredPopup(BuildContext context) {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  SizedBox(
+                    child: buildText(
+                        screenSize < 390 ? '지난달 나의\n랭킹 점수' : '지난달 나의 랭킹 점수',
+                        TextType.p18R,
+                        isAutoSize: true,
+                        screenSize: 326,
+                        align: TextAlign.left),
+                  ),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      buildText('지난달 나의 랭킹 점수', TextType.p18R),
-                      const SizedBox(width: 4),
                       Image.asset('assets/Vector_step.png',
-                          width: 24, height: 24)
+                          width: 24, height: 24),
+                      SizedBox(width: 4),
+                      buildText(
+                          '${rankProvider.userList.last.point}', TextType.h5,
+                          isAutoSize: true, screenSize: 326),
                     ],
                   ),
-                  buildText('${rankProvider.userList.last.point}', TextType.h5),
                 ],
               ),
               const SizedBox(height: 10),
@@ -258,18 +270,28 @@ Widget showRankingNotEnteredPopup(BuildContext context) {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  SizedBox(
+                    child: buildText(
+                        screenSize < 390
+                            ? '지난달 100위의\n랭킹 점수'
+                            : '지난달 100위의 랭킹 점수',
+                        TextType.p18R,
+                        isAutoSize: true,
+                        screenSize: 326,
+                        align: TextAlign.left),
+                  ),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      buildText('지난달 100위의 랭킹 점수', TextType.p18R),
-                      const SizedBox(width: 4),
                       Image.asset('assets/Vector_step.png',
-                          width: 24, height: 24)
+                          width: 24, height: 24),
+                      SizedBox(width: 4),
+                      buildText('$point', TextType.h5,
+                          isAutoSize: true, screenSize: 326),
                     ],
                   ),
-                  buildText('$point', TextType.h5),
                 ],
               ),
             ],
