@@ -56,9 +56,26 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
     return htmlString.replaceAll('<br>', '\n');
   }
 
-  void getUserAgent(String downloadUrl) {
+  void getUserAgent() {
     String userAgent = js.context.callMethod('getUserAgent').toString();
     print('User Agent: $userAgent');
+
+    String downloadUrl = '';
+    Uint8List image = Uint8List(0);
+
+    screenshotController
+        .capture(delay: const Duration(milliseconds: 10))
+        .then((capturedImage) async {
+      downloadUrl = downloadImage(capturedImage!);
+      image = capturedImage;
+
+      if (downloadUrl == '') {
+        print('downloadUrl is empty');
+        return;
+      }
+    }).catchError((onError) {
+      print(onError);
+    });
 
     if (userAgent.toLowerCase().contains('iphone') ||
         userAgent.toLowerCase().contains('ipad')) {
@@ -73,8 +90,8 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
       print('iOS');
       js.context.callMethod('downloadImageIos', [downloadUrl]);
     } else {
-      js.context.callMethod('downloadImageIos', [downloadUrl]);
       print('Other');
+      ShowCapturedWidget(image, downloadUrl);
     }
   }
 
@@ -277,21 +294,7 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
                           ),
                         ),
                         onPressed: () {
-                          screenshotController
-                              .capture(delay: const Duration(milliseconds: 10))
-                              .then((capturedImage) async {
-                            downloadImage(capturedImage!);
-                          }).catchError((onError) {
-                            print(onError);
-                          });
-
-                          screenshotController
-                              .capture(delay: const Duration(milliseconds: 10))
-                              .then((capturedImage) async {
-                            ShowCapturedWidget(capturedImage!);
-                          }).catchError((onError) {
-                            print(onError);
-                          });
+                          getUserAgent();
                         },
                       ),
                       const SizedBox(height: 16),
@@ -308,15 +311,13 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
     return formattedDate;
   }
 
-  void downloadImage(Uint8List capturedImage) {
+  String downloadImage(Uint8List capturedImage) {
     final blob = html.Blob([capturedImage], 'image/png');
     final url = html.Url.createObjectUrlFromBlob(blob);
-    getUserAgent(url);
+    return url;
   }
 
-  void ShowCapturedWidget(Uint8List capturedImage) {
-    final blob = html.Blob([capturedImage], 'image/png');
-    final url = html.Url.createObjectUrlFromBlob(blob);
+  void ShowCapturedWidget(Uint8List capturedImage, String url) {
     html.AnchorElement(
         href: html.Url.createObjectUrlFromBlob(
             html.Blob([capturedImage], 'image/png')))
