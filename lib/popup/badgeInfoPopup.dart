@@ -82,7 +82,8 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
       print('iOS');
       js.context.callMethod('downloadImageIos', [downloadUrl]);
     } else if (userAgent.toLowerCase().contains('android')) {
-      print('Android');
+      js.context.callMethod('downloadImageAndroid', [downloadUrl]);
+      print('Android call method!');
     } else if (userAgent.toLowerCase().contains('macintosh')) {
       print('iOS');
       js.context.callMethod('downloadImageIos', [downloadUrl]);
