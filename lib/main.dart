@@ -15,7 +15,7 @@ List<TestUser> testUserList = [];
 
 void main() async {
   print('앱시작 : ${DateTime.now()}');
-  //WidgetsFlutterBinding.ensureInitialized(); // Flutter 엔진과의 바인딩을 초기화합니다.
+  WidgetsFlutterBinding.ensureInitialized(); // Flutter 엔진과의 바인딩을 초기화합니다.
 
   await fetchSession();
 
@@ -47,13 +47,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white,
-      ),
-      debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.light,
-      home: SplashScreen(),
-    );
+        theme: ThemeData(
+          scaffoldBackgroundColor: Colors.white,
+        ),
+        debugShowCheckedModeBanner: false,
+        themeMode: ThemeMode.light,
+        home: FutureProvider(
+          create: (context) => QuestProvider().fetchQuest(),
+          initialData: Center(
+            child: CircularProgressIndicator(),
+          ),
+          child: QuestListPage(),
+        ));
   }
 }
 
@@ -76,7 +81,7 @@ class SplashScreen extends StatelessWidget {
     _loadResources(context);
     return Scaffold(
       body: Center(
-        child: CircularProgressIndicator(), // 로딩 인디케이터를 표시합니다.
+        child: CircularProgressIndicator(),
       ),
     );
   }

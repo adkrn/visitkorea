@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:visitkorea/jsonLoader.dart';
@@ -73,10 +74,41 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                     children: [
                       buildText('랭킹', TextType.h4),
                       const SizedBox(width: 4),
-                      const Icon(
-                        Icons.info_outline,
-                        color: Colors.black,
-                        size: 16,
+                      InkWell(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return CupertinoAlertDialog(
+                                title: const Text('랭킹전'),
+                                content: SingleChildScrollView(
+                                  // 내용이 길어질 수 있으므로 SingleChildScrollView 사용
+                                  child: ListBody(
+                                    // ListBody를 사용하여 자식들이 수직으로 배치되도록 함
+                                    children: <Widget>[
+                                      Text(
+                                          '랭킹전은 월간/연간 랭킹으로 운영되며, 랭킹점수가 동일할 경우 배지 보유량으로 순위가 결정됩니다.'),
+                                    ],
+                                  ),
+                                ),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: const Text('확인',
+                                        style: TextStyle(color: Colors.blue)),
+                                    onPressed: () {
+                                      Navigator.of(context).pop(); // 대화상자 닫기
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: const Icon(
+                          Icons.info_outline,
+                          color: Colors.black,
+                          size: 16,
+                        ),
                       )
                     ],
                   ),
@@ -270,6 +302,7 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
   Widget buildRankGridList() {
     return Consumer<RankingProvider>(
       builder: (context, rankingProvider, child) {
+        List<UserRankingInfo> userList = [];
         if (rankingProvider.isLoading) {
           return Column(children: [
             SizedBox(height: 300),
@@ -277,7 +310,8 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
             SizedBox(height: 300),
           ]);
         }
-        List<UserRankingInfo> userList = rankingProvider.userList;
+
+        userList = rankingProvider.userList;
         return Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -372,7 +406,6 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
               ),
               if (userRankingInfo.mainBadgeName != '')
                 Container(
-                  height: 24,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: ShapeDecoration(

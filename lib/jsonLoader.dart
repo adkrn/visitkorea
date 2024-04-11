@@ -35,7 +35,7 @@ class QuestProvider with ChangeNotifier {
     int activationEndDateTimeStamp = 2999,
   }) async {
     if (_isLoading) return; // 이미 데이터 로딩 중이라면 중복 실행 방지, 빈 리스트 반환
-
+    print('퀘스트 로드 시작');
     _isLoading = true;
     notifyListeners(); // 로딩 상태 업데이트
     Map<String, dynamic> queryParameters = {
@@ -513,7 +513,7 @@ class BadgeProvider with ChangeNotifier {
   }
 }
 
-Future<List<Quest>> fetchQuest() async {
+Future<List<Quest>> fetchEmptyQuest() async {
   String jsonString = await rootBundle.loadString('assets/quest.json');
   Map<String, dynamic> jsonResponse = jsonDecode(jsonString);
   List<dynamic> content = jsonResponse['content'];
@@ -645,12 +645,13 @@ class RankingProvider with ChangeNotifier {
             .map((data) => UserRankingInfo.fromJson(data))
             .toList();
         print('ranking Load Success');
+
         _userList.sort((a, b) => a.ranking.compareTo(b.ranking));
         for (int i = 0; i < _userList.length; i++) {
-          //print('${_userList[i].name}의 설정된 메인 배지 가져오기');
           _userList[i]
               .setMainBadgeName(await getMainBadgeName(userList[i].sns.snsId));
         }
+
         _isLoading = false;
         notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
       }
@@ -688,6 +689,7 @@ class RankingProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
         _groupsInfo = RankGroups.fromJson(jsonResponse);
+
         print('rankgroups Load Success');
         _isLoading = false;
         notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
@@ -965,15 +967,15 @@ class UserPrivacyInfoProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners(); // 로딩 상태 업데이트
     } finally {
-      _userPrivacyInfo = UserPrivacyInfo(
-        snsQuestInfoId: '',
-        isEventAgree: false,
-        isPrivacyAgree: false,
-        name: '',
-        phoneNumber: '',
-        isExposeRank: false,
-        isBadgeTesterMode: false,
-      );
+      // _userPrivacyInfo = UserPrivacyInfo(
+      //   snsQuestInfoId: '',
+      //   isEventAgree: false,
+      //   isPrivacyAgree: false,
+      //   name: '',
+      //   phoneNumber: '',
+      //   isExposeRank: false,
+      //   isBadgeTesterMode: false,
+      // );
       _isLoading = false;
       notifyListeners(); // 로딩 상태 업데이트
     }
