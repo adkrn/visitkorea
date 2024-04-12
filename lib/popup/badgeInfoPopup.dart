@@ -1,15 +1,18 @@
 import 'dart:typed_data';
 import 'dart:html' as html;
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:visitkorea/model/quest.dart';
 import '../common_widgets.dart';
 import '../jsonLoader.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
-
+import 'dart:ui' as ui;
 import 'package:screenshot/screenshot.dart';
 import 'dart:js' as js;
 
@@ -56,45 +59,81 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
     return htmlString.replaceAll('<br>', '\n');
   }
 
-  void getUserAgent() {
+  void getUserAgent() async {
     String userAgent = js.context.callMethod('getUserAgent').toString();
     print('User Agent: $userAgent');
 
-    String downloadUrl = '';
-    Uint8List image = Uint8List(0);
+    return Future.delayed(
+      const Duration(milliseconds: 20),
+      () async {
+        RenderRepaintBoundary? boundary =
+            src.currentContext!.findRenderObject() as RenderRepaintBoundary?;
+        ui.Image image = await boundary!.toImage();
+        ByteData? byteData =
+            await image.toByteData(format: ui.ImageByteFormat.png);
+        Uint8List pngBytes = byteData!.buffer.asUint8List();
+        final blob = html.Blob([pngBytes]);
+        final url = html.Url.createObjectUrlFromBlob(blob);
 
-    screenshotController
-        .capture(delay: const Duration(milliseconds: 10))
-        .then((capturedImage) async {
-      downloadUrl = downloadImage(capturedImage!);
-      image = capturedImage;
+        if (userAgent.toLowerCase().contains('iphone') ||
+            userAgent.toLowerCase().contains('ipad')) {
+          print('iOS');
+          js.context.callMethod('downloadImageIos', [url]);
+        } else if (userAgent.toLowerCase().contains('android')) {
+          js.context.callMethod('downloadImageAndroid', [url]);
+          print('Android call method!');
+        } else if (userAgent.toLowerCase().contains('macintosh')) {
+          print('iOS');
+          js.context.callMethod('downloadImageIos', [url]);
+        } else if (userAgent.toLowerCase().contains('ipod')) {
+          print('iOS');
+          js.context.callMethod('downloadImageIos', [url]);
+        } else {
+          print('Other');
+          ShowCapturedWidget(pngBytes, url);
+        }
 
-      if (downloadUrl == '') {
-        print('downloadUrl is empty');
-        return;
-      }
+        js.context.callMethod('downloadImageAndroid', [url]);
+      },
+    );
 
-      if (userAgent.toLowerCase().contains('iphone') ||
-          userAgent.toLowerCase().contains('ipad')) {
-        print('iOS');
-        js.context.callMethod('downloadImageIos', [downloadUrl]);
-      } else if (userAgent.toLowerCase().contains('android')) {
-        js.context.callMethod('downloadImageAndroid', [downloadUrl]);
-        print('Android call method!');
-      } else if (userAgent.toLowerCase().contains('macintosh')) {
-        print('iOS');
-        js.context.callMethod('downloadImageIos', [downloadUrl]);
-      } else if (userAgent.toLowerCase().contains('ipod')) {
-        print('iOS');
-        js.context.callMethod('downloadImageIos', [downloadUrl]);
-      } else {
-        print('Other');
-        ShowCapturedWidget(image, downloadUrl);
-      }
-    }).catchError((onError) {
-      print(onError);
-    });
+    // String downloadUrl = '';
+    // Uint8List image = Uint8List(0);
+
+    // screenshotController.capture(delay: const Duration(milliseconds: 10)).then(
+    //   (capturedImage) async {
+    //     downloadUrl = downloadImage(capturedImage!);
+    //     image = capturedImage;
+
+    //     if (downloadUrl == '') {
+    //       print('downloadUrl is empty');
+    //       return;
+    //     }
+
+    //     if (userAgent.toLowerCase().contains('iphone') ||
+    //         userAgent.toLowerCase().contains('ipad')) {
+    //       print('iOS');
+    //       js.context.callMethod('downloadImageIos', [downloadUrl]);
+    //     } else if (userAgent.toLowerCase().contains('android')) {
+    //       js.context.callMethod('downloadImageAndroid', [downloadUrl]);
+    //       print('Android call method!');
+    //     } else if (userAgent.toLowerCase().contains('macintosh')) {
+    //       print('iOS');
+    //       js.context.callMethod('downloadImageIos', [downloadUrl]);
+    //     } else if (userAgent.toLowerCase().contains('ipod')) {
+    //       print('iOS');
+    //       js.context.callMethod('downloadImageIos', [downloadUrl]);
+    //     } else {
+    //       print('Other');
+    //       ShowCapturedWidget(image, downloadUrl);
+    //     }
+    //   },
+    // ).catchError((onError) {
+    //   print(onError);
+    // });
   }
+
+  var src = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -212,67 +251,70 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
                       const SizedBox(height: 56),
                       Screenshot(
                         controller: screenshotController,
-                        child: SizedBox(
-                          width: 325,
-                          child: Stack(
-                            children: [
-                              Image.asset(
-                                'assets/badgeFrame/badgeFrame.png',
-                                fit: BoxFit.contain,
-                              ),
-                              Positioned(
-                                top: 20,
-                                left: 20,
-                                right: 20,
-                                bottom: 190,
-                                child: Image.asset(
-                                  'assets/enable/${widget.badge.badgeinfo.imgName}.png',
+                        child: RepaintBoundary(
+                          key: src,
+                          child: SizedBox(
+                            width: 325,
+                            child: Stack(
+                              children: [
+                                Image.asset(
+                                  'assets/badgeFrame/badgeFrame.png',
                                   fit: BoxFit.contain,
                                 ),
-                              ),
-                              Positioned(
-                                right: 20,
-                                left: 20,
-                                bottom: 160,
-                                child: Text(
-                                  context
-                                      .read<UserInfoProvider>()
-                                      .userInfo
-                                      .snsUserName,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                      fontSize: 20,
-                                      fontFamily: 'NotoSansKR',
-                                      fontWeight: FontWeight.w700),
+                                Positioned(
+                                  top: 20,
+                                  left: 20,
+                                  right: 20,
+                                  bottom: 190,
+                                  child: Image.asset(
+                                    'assets/enable/${widget.badge.badgeinfo.imgName}.png',
+                                    fit: BoxFit.contain,
+                                  ),
                                 ),
-                              ),
-                              Positioned(
-                                right: 66,
-                                left: 20,
-                                bottom: 105,
-                                child: Text(
-                                  widget.badge.badgeinfo.name,
-                                  textAlign: TextAlign.right,
-                                  style: const TextStyle(
-                                      fontSize: 14,
-                                      fontFamily: 'NotoSansKR',
-                                      fontWeight: FontWeight.w700),
+                                Positioned(
+                                  right: 20,
+                                  left: 20,
+                                  bottom: 160,
+                                  child: Text(
+                                    context
+                                        .read<UserInfoProvider>()
+                                        .userInfo
+                                        .snsUserName,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                        fontSize: 20,
+                                        fontFamily: 'NotoSansKR',
+                                        fontWeight: FontWeight.w700),
+                                  ),
                                 ),
-                              ),
-                              Positioned(
-                                right: 66,
-                                left: 20,
-                                bottom: 78,
-                                child: Text(
-                                  getTimeStamp(widget.badge.createDate),
-                                  textAlign: TextAlign.right,
-                                  style: const TextStyle(
-                                      fontSize: 14,
-                                      fontFamily: 'NotoSansKR',
-                                      fontWeight: FontWeight.w700),
+                                Positioned(
+                                  right: 66,
+                                  left: 20,
+                                  bottom: 105,
+                                  child: Text(
+                                    widget.badge.badgeinfo.name,
+                                    textAlign: TextAlign.right,
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontFamily: 'NotoSansKR',
+                                        fontWeight: FontWeight.w700),
+                                  ),
                                 ),
-                              ),
-                            ],
+                                Positioned(
+                                  right: 66,
+                                  left: 20,
+                                  bottom: 78,
+                                  child: Text(
+                                    getTimeStamp(widget.badge.createDate),
+                                    textAlign: TextAlign.right,
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontFamily: 'NotoSansKR',
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
