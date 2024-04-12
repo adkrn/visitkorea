@@ -136,6 +136,27 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
     }
   }
 
+  String getQuestDesc() {
+    String desc = '';
+    switch (widget.quest.progressType) {
+      case ProgressType.unProgressed:
+        desc = widget.quest.questDetails.unknownBadge!.description;
+        break;
+      case ProgressType.progress:
+        desc = widget.quest.questDetails.disableBadge!.description;
+        break;
+      default:
+        desc = widget.quest.questDetails.enableBadge!.description;
+        break;
+    }
+
+    if (widget.quest.questDetails.exposeStatus == ExposeStatus.testing) {
+      desc += ' 테스트중';
+    }
+
+    return desc;
+  }
+
   @override
   Widget build(BuildContext context) {
     setPopupType();
@@ -199,9 +220,7 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
                   SizedBox(
                     width: 320,
                     child: buildText(
-                        convertBrToNewline(
-                            widget.quest.questDetails.description),
-                        TextType.p16R),
+                        convertBrToNewline(getQuestDesc()), TextType.p16R),
                   ),
                   const SizedBox(height: 16),
                   Row(
