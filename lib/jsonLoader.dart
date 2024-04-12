@@ -535,7 +535,9 @@ Future<void> fetchSession() async {
   print('$domain/rewardPage/');
 
   userSession = UserSession(
-      sessionId: '', snsId: ''); // 16aa6395-6bda-45d1-9111-395e45215249
+      sessionId: '',
+      snsId:
+          'f48926e6-af71-430b-98e5-4909e524e81d'); // 16aa6395-6bda-45d1-9111-395e45215249
   print(userSession?.snsId);
   // f48926e6-af71-430b-98e5-4909e524e81d
   // b878e5c3-5e6f-43b9-a6dd-05d7571e0f77
