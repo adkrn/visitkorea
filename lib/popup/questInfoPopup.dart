@@ -277,7 +277,7 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
                     builder: (BuildContext context) {
                       // 확인/취소 버튼이 있는 AlertDialog 생성
                       return CupertinoAlertDialog(
-                        title: Text('대표 배지를 설정하시겠습니까?'),
+                        title: Text('대표 배지로 설정하시겠습니까?'),
                         actions: <Widget>[
                           TextButton(
                             child: Text('취소'),

@@ -58,7 +58,7 @@ class _JoinEventPopup extends State<JoinEventPopup> {
 
   // 입력된 이름이 숫자인지 확인하는 함수
   bool isNameValid(String name) {
-    return RegExp(r'^[a-zA-Z가-힣]+$').hasMatch(name);
+    return RegExp(r'^[가-힣]+$').hasMatch(name);
   }
 
   // 입력된 전화번호가 숫자인지 확인하는 함수
@@ -175,7 +175,7 @@ class _JoinEventPopup extends State<JoinEventPopup> {
             scrollPadding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom),
             decoration: const InputDecoration(
-              hintText: '이름(필수)',
+              hintText: '이름(한글만 입력 가능)',
               hintStyle: TextStyle(
                 color: Color(0xFF999999),
                 fontFamily: 'NotoSansKR',
@@ -202,7 +202,7 @@ class _JoinEventPopup extends State<JoinEventPopup> {
             scrollPadding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom),
             decoration: const InputDecoration(
-              hintText: '휴대전화번호(필수)-를 빼고 입력해주세요',
+              hintText: "휴대전화번호(구분자 '-'제외한 숫자만 입력 가능)",
               hintStyle: TextStyle(
                 color: Color(0xFF999999),
                 fontFamily: 'NotoSansKR',

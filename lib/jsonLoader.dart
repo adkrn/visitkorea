@@ -294,8 +294,8 @@ class QuestProvider with ChangeNotifier {
         barrierDismissible: false, // 사용자가 다이얼로그 바깥을 탭해도 닫히지 않도록 설정
         builder: (BuildContext context) {
           return CupertinoAlertDialog(
-            title: Text('도전과제 완료'),
-            content: Text('과제 보상을 수령하였습니다.\n앞으로도 다양한 도전과제에\n참여해보세요!'),
+            title: Text('과제 보상 수령 완료'),
+            content: Text('획득한 배지는 배지도감에서\n확인 가능합니다.\n앞으로도 다양한 도전과제에\n참여해보세요!'),
             actions: <Widget>[
               TextButton(
                 child: Text(
@@ -535,9 +535,7 @@ Future<void> fetchSession() async {
   print('$domain/rewardPage/');
 
   userSession = UserSession(
-      sessionId: '',
-      snsId:
-          'f48926e6-af71-430b-98e5-4909e524e81d'); // 16aa6395-6bda-45d1-9111-395e45215249
+      sessionId: '', snsId: ''); // 16aa6395-6bda-45d1-9111-395e45215249
   print(userSession?.snsId);
   // f48926e6-af71-430b-98e5-4909e524e81d
   // b878e5c3-5e6f-43b9-a6dd-05d7571e0f77
