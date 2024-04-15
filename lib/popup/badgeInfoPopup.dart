@@ -92,8 +92,6 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
           print('Other');
           ShowCapturedWidget(pngBytes, url);
         }
-
-        js.context.callMethod('downloadImageAndroid', [url]);
       },
     );
 
