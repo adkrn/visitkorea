@@ -242,25 +242,26 @@ class Badge_visitKorean {
   final String badgeId;
   final String name;
   final String description;
+  final String getMethodDescription;
   final String imgName;
   final int indexId;
 
-  Badge_visitKorean({
-    required this.badgeId,
-    required this.name,
-    required this.description,
-    required this.imgName,
-    required this.indexId,
-  });
+  Badge_visitKorean(
+      {required this.badgeId,
+      required this.name,
+      required this.description,
+      required this.imgName,
+      required this.indexId,
+      required this.getMethodDescription});
 
   factory Badge_visitKorean.fromJson(Map<String, dynamic> json) {
     return Badge_visitKorean(
-      badgeId: json['badgeId'],
-      name: json['name'],
-      description: json['description'],
-      imgName: json['imgName'],
-      indexId: json['indexId'],
-    );
+        badgeId: json['badgeId'],
+        name: json['name'],
+        description: json['description'],
+        imgName: json['imgName'],
+        indexId: json['indexId'],
+        getMethodDescription: json['getMethodDescription']);
   }
 }
 

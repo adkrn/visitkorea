@@ -137,13 +137,10 @@ class _DesktopLayoutState_questList extends State<DesktopLayout_questList> {
           }
 
           // 테스터 모드가 아닌 사용자는 테스트 퀘스트 삭제.
-          if (userPrivacyInfoProvider.userPrivacyInfo.isBadgeTesterMode ==
-              false) {
-            for (var quest in quests) {
-              if (quest.questDetails.exposeStatus == ExposeStatus.testing) {
-                quests.remove(quest);
-              }
-            }
+          if (!userPrivacyInfoProvider.userPrivacyInfo.isBadgeTesterMode &&
+              questProvider.isLogin) {
+            quests.removeWhere((quest) =>
+                quest.questDetails.exposeStatus == ExposeStatus.testing);
           }
         }
 

@@ -84,11 +84,10 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
             if (userAgent.toLowerCase().contains('iphone') ||
                 userAgent.toLowerCase().contains('ipad')) {
               print('iOS');
-              js.context
-                  .callMethod('downloadImageIos', [response.request?.url]);
+              js.context.callMethod('downloadImageIos', [response.body]);
             } else if (userAgent.toLowerCase().contains('android')) {
               js.context
-                  .callMethod('downloadImageAndroid', [response.request?.url]);
+                  .callMethod('downloadImageAndroid', [response.body]);
 
               print('Android call method!');
             } else if (userAgent.toLowerCase().contains('macintosh')) {
@@ -96,7 +95,7 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
             } else if (userAgent.toLowerCase().contains('ipod')) {
               print('iOS');
               js.context
-                  .callMethod('downloadImageIos', [response.request?.url]);
+                  .callMethod('downloadImageIos', [response.body]);
             } else {
               print('Other');
             }
@@ -147,6 +146,8 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
 
   @override
   Widget build(BuildContext context) {
+    String url = '';
+
     return Stack(
       children: [
         // 반투명 배경 추가

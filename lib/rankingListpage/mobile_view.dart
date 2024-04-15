@@ -200,8 +200,8 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                       //width: (isNotTop ? 32 : 40),
                       //height: (isNotTop ? 32 : 40),
                       child: Image.network(
-                        'assets/userIcon.png',
-                        fit: BoxFit.contain,
+                        userList[num].profileUrl!,
+                        fit: BoxFit.fitWidth,
                       ),
                     ),
                   ),
@@ -289,6 +289,14 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
         children: [
           Consumer<RankingProvider>(
             builder: (context, value, child) {
+              if (value.isLoading) {
+                buildText(
+                  '불러오는중..',
+                  TextType.p12R,
+                  textColor: const Color(0xFF7D7D7D),
+                );
+              }
+
               DateTime dateTime = DateTime.parse(value.groupsInfo.confirmDate);
               String formattedString =
                   DateFormat("yyyy년 MM월 dd일 HH시mm분").format(dateTime);
@@ -380,6 +388,10 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(42),
                           ),
+                        ),
+                        child: Image.network(
+                          userRankingInfo.profileUrl!,
+                          fit: BoxFit.fitWidth,
                         ),
                       ),
                       const SizedBox(width: 24),

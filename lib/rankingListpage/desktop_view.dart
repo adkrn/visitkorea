@@ -166,6 +166,9 @@ class _DesktopLayoutState_rankingList extends State<DesktopLayout_rankingList> {
 
     return Consumer<RankingProvider>(
         builder: (context, rankingProvider, child) {
+      if (rankingProvider.isLoading) {
+        return SizedBox();
+      }
       List<UserRankingInfo> userList = rankingProvider.userList;
       return Stack(
         alignment: Alignment.center,
@@ -198,11 +201,12 @@ class _DesktopLayoutState_rankingList extends State<DesktopLayout_rankingList> {
                       borderRadius: BorderRadius.circular(42),
                     ),
                   ),
-                  child: Container(
+                  child: SizedBox(
                     width: isNotTop ? 32 : 40,
                     height: isNotTop ? 32 : 40,
-                    child: Image.asset(
-                      'assets/userIcon.png',
+                    child: Image.network(
+                      userList[num].profileUrl!,
+                      fit: BoxFit.fitWidth,
                     ),
                   ),
                 ),
@@ -291,6 +295,14 @@ class _DesktopLayoutState_rankingList extends State<DesktopLayout_rankingList> {
         children: [
           Consumer<RankingProvider>(
             builder: (context, value, child) {
+              if (value.isLoading) {
+                buildText(
+                  '불러오는중..',
+                  TextType.p12R,
+                  textColor: const Color(0xFF7D7D7D),
+                );
+              }
+
               DateTime dateTime = DateTime.parse(value.groupsInfo.confirmDate);
               String formattedString =
                   DateFormat("yyyy년 MM월 dd일 HH시mm분").format(dateTime);
@@ -396,6 +408,10 @@ class _DesktopLayoutState_rankingList extends State<DesktopLayout_rankingList> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(42),
                           ),
+                        ),
+                        child: Image.network(
+                          userRankingInfo.profileUrl!,
+                          fit: BoxFit.fitWidth,
                         ),
                       ),
                       const SizedBox(width: 24),

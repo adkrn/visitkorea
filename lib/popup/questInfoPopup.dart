@@ -544,7 +544,7 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
   Widget buildGetMethodDescription(Quest quest) {
     // '획득방법'을 분리
     var splitDescription =
-        quest.questDetails.getMethodDescription.split('<br>');
+        quest.questDetails.enableBadge!.getMethodDescription.split('<br>');
     String details = splitDescription.skip(0).join('\n'); // 나머지 설명
 
     return Container(

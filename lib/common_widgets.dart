@@ -165,14 +165,12 @@ Widget buildNoticeSection_Mobile() {
             textColor: textColor,
             align: TextAlign.left),
         const SizedBox(height: 8),
-        buildText(
-            '• 배지콕콕 메인 페이지의 닉네임 하단에 있는 랭킹점수(발자국)를 클릭하면, 활동내역을 확인할 수 있습니다. ',
+        buildText('• 배지콕콕 메인 페이지의 닉네임 하단에 있는 랭킹점수를 클릭하면, 활동내역을 확인할 수 있습니다. ',
             TextType.p14R,
-            textColor: textColor,
-            align: TextAlign.left),
+            textColor: textColor, align: TextAlign.left),
         const SizedBox(height: 8),
         buildText(
-            '• 대구석 첫걸음(회원가입), 지역 명예 주민(디지털 관광주민증 발급), 구독 준비(가볼래-터 구독) 배지의 경우 기존 활동내역도 소급 적용됩니다. 그 외 배지콕콕 서비스 이전의 활동내역은 소급 적용되지 않습니다.',
+            '• 대구석 첫걸음(회원가입), 지역 명예 주민(디지털 관광주민증 발급), 구독 준비 완료(가볼래-터 구독) 배지의 경우 기존 활동내역도 소급 적용됩니다. 그 외 배지콕콕 서비스 이전의 활동내역은 소급 적용되지 않습니다.',
             TextType.p14R,
             textColor: textColor,
             align: TextAlign.left),
@@ -225,13 +223,13 @@ Widget buildNoticeSection_Desktop() {
                 align: TextAlign.left),
             const SizedBox(height: 8),
             buildText(
-                '• 배지콕콕 메인 페이지의 닉네임 하단에 있는 랭킹점수(발자국)를 클릭하면, 활동내역을 확인할 수 있습니다. ',
+                '• 배지콕콕 메인 페이지의 닉네임 하단에 있는 랭킹점수를 클릭하면, 활동내역을 확인할 수 있습니다. ',
                 TextType.p14R,
                 textColor: const Color(0xFF7D7D7D),
                 align: TextAlign.left),
             const SizedBox(height: 8),
             buildText(
-                '• 대구석 첫걸음(회원가입), 지역 명예 주민(디지털 관광주민증 발급), 구독 준비(가볼래-터 구독) 배지의 경우 기존 활동내역도 소급 적용됩니다. 그 외 배지콕콕 서비스 이전의 활동내역은 소급 적용되지 않습니다.',
+                '• 대구석 첫걸음(회원가입), 지역 명예 주민(디지털 관광주민증 발급), 구독 준비 완료(가볼래-터 구독) 배지의 경우 기존 활동내역도 소급 적용됩니다. 그 외 배지콕콕 서비스 이전의 활동내역은 소급 적용되지 않습니다.',
                 TextType.p14R,
                 textColor: const Color(0xFF7D7D7D),
                 align: TextAlign.left),

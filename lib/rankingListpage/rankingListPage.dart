@@ -385,12 +385,10 @@ Widget buildRankNoticeSection() {
             buildText('• 랭킹전은 월간/연간 랭킹으로 구분 운영됩니다.', TextType.p14R,
                 textColor: textColor, align: TextAlign.left),
             const SizedBox(height: 8),
-            buildText(
-                '• 월간랭킹은 주 1회 업데이트되며, 다음 달 초에 확정된 순위가 발표됩니다.', TextType.p14R,
+            buildText('• 월간랭킹은 매주 초 업데이트되며, 매월 초 확정된 순위가 발표됩니다.', TextType.p14R,
                 textColor: textColor, align: TextAlign.left),
             const SizedBox(height: 8),
-            buildText(
-                '• 연간랭킹은 매월 1회 업데이트되며, 다음 연도 초에 순위가 발표됩니다.', TextType.p14R,
+            buildText('• 연간랭킹은 매월 초 업데이트되며, 매년 초 확정된 순위가 발표됩니다.', TextType.p14R,
                 textColor: textColor, align: TextAlign.left),
           ],
         ),

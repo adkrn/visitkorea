@@ -1,3 +1,5 @@
+import 'dart:html';
+
 class UserRankingInfo {
   final String rankBoardId;
   final String rankGroupId;

@@ -778,7 +778,7 @@ class _MainBannerState extends State<MainBanner> {
             Consumer<UserInfoProvider>(
               builder: (context, provider, child) {
                 if (provider.isLoading) {
-                  return const Text('불러오는중..');
+                  return buildText('불러오는중..', TextType.p14R);
                 }
                 return Text(
                   userSession != null
@@ -1004,7 +1004,7 @@ class _MainBannerState extends State<MainBanner> {
           child: Consumer<UserInfoProvider>(
             builder: (context, provider, child) {
               if (provider.isLoading) {
-                return const Text('불러오는중');
+                return buildText('불러오는중..', TextType.p14R);
               }
               return buildText('${provider.userPoint} 보', TextType.h6,
                   align: TextAlign.left);
