@@ -5,6 +5,7 @@ class UserRankingInfo {
   final int ranking;
   final int point;
   String? mainBadgeName;
+  String? profileUrl;
 
   UserRankingInfo({
     required this.rankBoardId,
@@ -13,6 +14,7 @@ class UserRankingInfo {
     required this.ranking,
     required this.point,
     this.mainBadgeName,
+    this.profileUrl,
   });
 
   factory UserRankingInfo.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,10 @@ class UserRankingInfo {
 
   void setMainBadgeName(String name) {
     mainBadgeName = name;
+  }
+
+  void setProfileUrl(String url) {
+    profileUrl = url;
   }
 }
 

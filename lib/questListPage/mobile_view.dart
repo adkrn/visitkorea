@@ -163,14 +163,10 @@ class _MobileLayoutState_questList extends State<MobileLayout_questList> {
           }
 
           // 테스터 모드가 아닌 사용자는 테스트 퀘스트 삭제.
-          if (userPrivacyInfoProvider.userPrivacyInfo.isBadgeTesterMode ==
-                  false &&
+          if (!userPrivacyInfoProvider.userPrivacyInfo.isBadgeTesterMode &&
               questProvider.isLogin) {
-            for (var quest in quests) {
-              if (quest.questDetails.exposeStatus == ExposeStatus.testing) {
-                quests.remove(quest);
-              }
-            }
+            quests.removeWhere((quest) =>
+                quest.questDetails.exposeStatus == ExposeStatus.testing);
           }
         }
 

@@ -11,7 +11,7 @@ import 'package:flutter/services.dart';
 import 'main.dart';
 import 'package:flutter/cupertino.dart';
 
-String domain = 'dev.ktovisitkorea.com';
+String domain = '121.126.153.150:8080';
 //'dev.ktovisitkorea.com'
 //'121.126.153.150:8080'
 //'stage.visitkorea.or.kr'
@@ -535,7 +535,9 @@ Future<void> fetchSession() async {
   print('$domain/rewardPage/');
 
   userSession = UserSession(
-      sessionId: '', snsId: ''); // 16aa6395-6bda-45d1-9111-395e45215249
+      sessionId: '',
+      snsId:
+          '16aa6395-6bda-45d1-9111-395e45215249'); // 16aa6395-6bda-45d1-9111-395e45215249
   print(userSession?.snsId);
   // f48926e6-af71-430b-98e5-4909e524e81d
   // b878e5c3-5e6f-43b9-a6dd-05d7571e0f77
@@ -587,14 +589,17 @@ class RankingProvider with ChangeNotifier {
 
   bool get isLoading => _isLoading;
 
-  RankingProvider() {
-    refreshData('M');
-  }
+  // RankingProvider() {
+  //   refreshData('M');
+  // }
 
   Future<void> refreshData(String intervalType) async {
-    _isLoading = false;
+    if (_isLoading) return;
+    _isLoading = true;
+    notifyListeners();
     await Future.wait(
         [fatchRankGroups(intervalType), fetchRankingList(intervalType)]);
+    _isLoading = false;
     notifyListeners();
   }
 
@@ -608,11 +613,6 @@ class RankingProvider with ChangeNotifier {
   }
 
   Future<void> fetchRankingList(String intervalType) async {
-    if (_isLoading) return;
-    print('ranking Load Start');
-    _isLoading = true;
-    notifyListeners();
-
     Map<String, dynamic> queryParameters = {
       'intervalType': intervalType,
       'page': '0',
@@ -650,23 +650,18 @@ class RankingProvider with ChangeNotifier {
         for (int i = 0; i < _userList.length; i++) {
           _userList[i]
               .setMainBadgeName(await getMainBadgeName(userList[i].sns.snsId));
+          _userList[i]
+              .setProfileUrl(await getProfileUrl(userList[i].sns.snsId));
         }
-
-        _isLoading = false;
-        notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
       }
     } catch (e) {
       // 네트워크 오류 처리
       print('ranking Load Fail');
       print('Error: $e');
-      _isLoading = false;
-      notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
     }
   }
 
   Future<void> fatchRankGroups(String intervalType) async {
-    if (_isLoading) return;
-
     Map<String, dynamic> queryParameters = {
       'intervalType': intervalType,
     };
@@ -691,15 +686,11 @@ class RankingProvider with ChangeNotifier {
         _groupsInfo = RankGroups.fromJson(jsonResponse);
 
         print('rankgroups Load Success');
-        _isLoading = false;
-        notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
       }
     } catch (e) {
       // 네트워크 오류 처리
       print('rankgroups Load Fail');
       print('Error: $e');
-      _isLoading = false;
-      notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
     }
   }
 
@@ -726,6 +717,34 @@ class RankingProvider with ChangeNotifier {
         var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
         Badge_completed badgeComplte = (Badge_completed.fromJson(jsonResponse));
         return badgeComplte.badgeinfo.name;
+      }
+    } catch (e) {
+      //print('Failed to load MainBadge. Error: $e');
+      //print('해당 유저는 메인 배지가 설정되어 있지 않습니다.');
+    }
+    return '';
+  }
+
+  Future<String> getProfileUrl(String snsId) async {
+    Map<String, dynamic> queryParameters = {
+      'timeStamp': DateTime.now().millisecondsSinceEpoch.toString()
+    };
+
+    var url = Uri.http(domain, '/quest-api/v1/snses/image', queryParameters);
+
+    try {
+      var response = await http.get(
+        url,
+        headers: {
+          'SNS_ID': snsId,
+          'Cache-Control': 'no-store',
+          'Pragma': 'no-store',
+          'Expires': '0',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return response.body;
       }
     } catch (e) {
       //print('Failed to load MainBadge. Error: $e');

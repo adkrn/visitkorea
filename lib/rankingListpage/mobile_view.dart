@@ -80,21 +80,28 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                             context: context,
                             builder: (BuildContext context) {
                               return CupertinoAlertDialog(
-                                title: const Text('랭킹전'),
-                                content: SingleChildScrollView(
+                                title: const Text(
+                                  '랭킹전',
+                                  style: TextStyle(fontFamily: 'NotoSansKR'),
+                                ),
+                                content: const SingleChildScrollView(
                                   // 내용이 길어질 수 있으므로 SingleChildScrollView 사용
                                   child: ListBody(
                                     // ListBody를 사용하여 자식들이 수직으로 배치되도록 함
                                     children: <Widget>[
                                       Text(
-                                          '랭킹전은 월간/연간 랭킹으로 운영되며, 랭킹점수가 동일할 경우 배지 보유량으로 순위가 결정됩니다.'),
+                                          '랭킹전은 월간/연간 랭킹으로 운영되며, 랭킹점수가 동일할 경우 배지 보유량으로 순위가 결정됩니다.',
+                                          style: TextStyle(
+                                              fontFamily: 'NotoSansKR')),
                                     ],
                                   ),
                                 ),
                                 actions: <Widget>[
                                   TextButton(
                                     child: const Text('확인',
-                                        style: TextStyle(color: Colors.blue)),
+                                        style: TextStyle(
+                                            fontFamily: 'NotoSansKR',
+                                            color: Colors.blue)),
                                     onPressed: () {
                                       Navigator.of(context).pop(); // 대화상자 닫기
                                     },
@@ -114,7 +121,7 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                   ),
                 ),
                 CustomDropdownMenu(
-                  menuItems: ['연간', '월간'],
+                  menuItems: const ['연간', '월간'],
                   initialValue: '월간',
                   isEnable: true,
                   onItemSelected: (String selectedValue) {
@@ -153,6 +160,9 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
 
     return Consumer<RankingProvider>(
       builder: (context, rankingProvider, child) {
+        if (rankingProvider.isLoading) {
+          return SizedBox();
+        }
         List<UserRankingInfo> userList = rankingProvider.userList;
         return Stack(
           alignment: Alignment.center,
@@ -161,8 +171,8 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
             Container(
               //width: 114,
               //height: isNotTop ? 158 : 171,
-              padding:
-                  EdgeInsets.only(top: 24, right: 16, left: 16, bottom: 16),
+              padding: const EdgeInsets.only(
+                  top: 24, right: 16, left: 16, bottom: 16),
               decoration: ShapeDecoration(
                 color: Colors.white,
                 shape: RoundedRectangleBorder(
@@ -178,7 +188,7 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                   Container(
                     width: isNotTop ? 60 : 80,
                     height: isNotTop ? 60 : 80,
-                    padding: EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
                     clipBehavior: Clip.antiAlias,
                     decoration: ShapeDecoration(
                       color: const Color(0xFFF6F6F6),
@@ -189,7 +199,7 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                     child: SizedBox(
                       //width: (isNotTop ? 32 : 40),
                       //height: (isNotTop ? 32 : 40),
-                      child: Image.asset(
+                      child: Image.network(
                         'assets/userIcon.png',
                         fit: BoxFit.contain,
                       ),
@@ -218,7 +228,7 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                           width: 16,
                           height: 16,
                           clipBehavior: Clip.antiAlias,
-                          decoration: BoxDecoration(),
+                          decoration: const BoxDecoration(),
                           child: Image.asset(
                             'assets/Vector_step.png',
                             color: Colors.white,
@@ -304,7 +314,7 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
       builder: (context, rankingProvider, child) {
         List<UserRankingInfo> userList = [];
         if (rankingProvider.isLoading) {
-          return Column(children: [
+          return const Column(children: [
             SizedBox(height: 300),
             CircularProgressIndicator(),
             SizedBox(height: 300),

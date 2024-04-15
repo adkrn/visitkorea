@@ -683,7 +683,10 @@ class _CustomDropdownMenu extends State<CustomDropdownMenu> {
       itemBuilder: (BuildContext context) => widget.menuItems
           .map((String value) => PopupMenuItem<String>(
                 value: value,
-                child: Text(value),
+                child: Text(
+                  value,
+                  style: TextStyle(fontSize: 16, fontFamily: 'NotoSansKR'),
+                ),
                 onTap: () {},
               ))
           .toList(),

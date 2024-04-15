@@ -37,8 +37,10 @@ class _RankingListPageState extends State<RankingListPage> {
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (provider.groupsInfo.popupYn) _showDialog(context);
+      provider.refreshData('M');
+      _showDialog(context);
     });
   }
 
@@ -48,21 +50,33 @@ class _RankingListPageState extends State<RankingListPage> {
     _isShowPopup = true;
     UserRankingInfo? thisUser = provider.getThisUser(userSession!.snsId);
 
-    // 사용자가 없거나 랭크가 100보다 큰 경우와 그렇지 않은 경우를 구분
-    Widget dialogChild;
-    if (thisUser == null || thisUser.ranking > 100) {
-      dialogChild = showRankingNotEnteredPopup(context);
-    } else {
-      dialogChild = showRankingToolTipPopup(context);
-    }
-
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-        child: dialogChild,
-      ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+          child: Consumer<RankingProvider>(
+            builder: (context, value, child) {
+              if (value.isLoading) {
+                return SizedBox();
+              }
+
+              // 사용자가 없거나 랭크가 100보다 큰 경우와 그렇지 않은 경우를 구분
+              Widget dialogChild;
+              if (provider.groupsInfo.popupYn == false) {
+                dialogChild = SizedBox();
+                Navigator.pop(context);
+              } else {
+                if (thisUser == null || thisUser.ranking > 100) {
+                  dialogChild = showRankingNotEnteredPopup(context);
+                } else {
+                  dialogChild = showRankingToolTipPopup(context);
+                }
+              }
+
+              return dialogChild;
+            },
+          )),
     );
   }
 
