@@ -3,18 +3,16 @@ import 'dart:html' as html;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:visitkorea/model/quest.dart';
 import '../common_widgets.dart';
 import '../jsonLoader.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
-import 'dart:ui' as ui;
 import 'package:screenshot/screenshot.dart';
 import 'dart:js' as js;
+import 'package:http/http.dart' as http;
+import '../main.dart';
 
 OverlayEntry? overlayEntry;
 
@@ -66,31 +64,45 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
     return Future.delayed(
       const Duration(milliseconds: 20),
       () async {
-        RenderRepaintBoundary? boundary =
-            src.currentContext!.findRenderObject() as RenderRepaintBoundary?;
-        ui.Image image = await boundary!.toImage();
-        ByteData? byteData =
-            await image.toByteData(format: ui.ImageByteFormat.png);
-        Uint8List pngBytes = byteData!.buffer.asUint8List();
-        final blob = html.Blob([pngBytes]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
+        Map<String, dynamic> queryParameters = {
+          'badgeSnsId': widget.badge.badgeSnsId,
+          'timeStamp': DateTime.now().millisecondsSinceEpoch.toString()
+        };
+        final url = Uri.http(domain, '/quest-api/v1/image', queryParameters);
+        try {
+          var response = await http.get(
+            url,
+            headers: {
+              'SNS_ID': '${userSession?.snsId}',
+              'Cache-Control': 'no-store', // 캐시 방지
+              'Pragma': 'no-store', // 캐시 방지
+              'Expires': '0', // 캐시 방지
+            },
+          );
 
-        if (userAgent.toLowerCase().contains('iphone') ||
-            userAgent.toLowerCase().contains('ipad')) {
-          print('iOS');
-          js.context.callMethod('downloadImageIos', [url]);
-        } else if (userAgent.toLowerCase().contains('android')) {
-          js.context.callMethod('downloadImageAndroid', [url]);
-          print('Android call method!');
-        } else if (userAgent.toLowerCase().contains('macintosh')) {
-          print('iOS');
-          js.context.callMethod('downloadImageIos', [url]);
-        } else if (userAgent.toLowerCase().contains('ipod')) {
-          print('iOS');
-          js.context.callMethod('downloadImageIos', [url]);
-        } else {
-          print('Other');
-          ShowCapturedWidget(pngBytes, url);
+          if (response.statusCode == 200) {
+            if (userAgent.toLowerCase().contains('iphone') ||
+                userAgent.toLowerCase().contains('ipad')) {
+              print('iOS');
+              js.context
+                  .callMethod('downloadImageIos', [response.request?.url]);
+            } else if (userAgent.toLowerCase().contains('android')) {
+              js.context
+                  .callMethod('downloadImageAndroid', [response.request?.url]);
+
+              print('Android call method!');
+            } else if (userAgent.toLowerCase().contains('macintosh')) {
+              print('iOS');
+            } else if (userAgent.toLowerCase().contains('ipod')) {
+              print('iOS');
+              js.context
+                  .callMethod('downloadImageIos', [response.request?.url]);
+            } else {
+              print('Other');
+            }
+          }
+        } catch (e) {
+          print('error : $e');
         }
       },
     );
