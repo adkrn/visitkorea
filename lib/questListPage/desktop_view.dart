@@ -100,42 +100,38 @@ class _DesktopLayoutState_questList extends State<DesktopLayout_questList> {
             badgeProvider.badgeList);
 
         if (quests.isEmpty) return const SizedBox();
-
         String title = getQuestSectionTitleByType(type);
 
-        if (questProvider.isLogin) {
-          if (type == QuestType.activity) {
-            bool isVIP = false;
-            for (var quest in quests) {
-              // VIP 배지를 보유중인지 체크
-              // 배지수령중인 상태를 체크하려면 isCompleted가 false인 상태에서 완료됐는지 체크가 되야하는데
-              // Action Count(달성조건)가 0이기 때문에 체크 할 방법이 현재는 없음. 수령 안한 상태를 적용 할 수가 없음.
-              if (quest.questDetails.conditionName == '대구석VIP 달성하기') {
-                if (quest.progressType.index > 2) {
-                  isVIP = true;
-                }
-              }
-            }
-            List<Quest> vipBadges = quests
-                .where((quest) =>
-                    quest.questDetails.conditionName == '대구석VIP 달성하기')
-                .toList();
-
-            if (isVIP == false) {
-              for (var vip in vipBadges) {
-                if (vip.questDetails.name != '콕콕학사') {
-                  quests.remove(quests.where((quest) => quest == vip).single);
-                }
-              }
-            } else {
-              for (var vip in vipBadges) {
-                if (vip.completed == false) {
-                  quests.remove(quests.where((quest) => quest == vip).single);
-                }
-              }
+        bool isVIP = false;
+        for (var quest in quests) {
+          // VIP 배지를 보유중인지 체크
+          // 배지수령중인 상태를 체크하려면 isCompleted가 false인 상태에서 완료됐는지 체크가 되야하는데
+          // Action Count(달성조건)가 0이기 때문에 체크 할 방법이 현재는 없음. 수령 안한 상태를 적용 할 수가 없음.
+          if (quest.questDetails.conditionName == '대구석VIP 달성하기') {
+            if (quest.progressType.index > 2) {
+              isVIP = true;
             }
           }
+        }
+        List<Quest> vipBadges = quests
+            .where((quest) => quest.questDetails.conditionName == '대구석VIP 달성하기')
+            .toList();
 
+        if (isVIP == false) {
+          for (var vip in vipBadges) {
+            if (vip.questDetails.name != '콕콕학사') {
+              quests.remove(quests.where((quest) => quest == vip).single);
+            }
+          }
+        } else {
+          for (var vip in vipBadges) {
+            if (vip.completed == false) {
+              quests.remove(quests.where((quest) => quest == vip).single);
+            }
+          }
+        }
+
+        if (questProvider.isLogin) {
           // 테스터 모드가 아닌 사용자는 테스트 퀘스트 삭제.
           if (!userPrivacyInfoProvider.userPrivacyInfo.isBadgeTesterMode &&
               questProvider.isLogin) {
@@ -143,6 +139,10 @@ class _DesktopLayoutState_questList extends State<DesktopLayout_questList> {
                 quest.questDetails.exposeStatus == ExposeStatus.testing);
           }
         }
+
+        // 대기중인 퀘스트는 삭제
+        quests.removeWhere(
+            (quest) => quest.questDetails.exposeStatus == ExposeStatus.waiting);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,

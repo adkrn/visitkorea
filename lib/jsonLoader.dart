@@ -11,7 +11,7 @@ import 'package:flutter/services.dart';
 import 'main.dart';
 import 'package:flutter/cupertino.dart';
 
-String domain = '121.126.153.150:8080';
+String domain = 'dev.ktovisitkorea.com';
 //'dev.ktovisitkorea.com'
 //'121.126.153.150:8080'
 //'stage.visitkorea.or.kr'
@@ -385,15 +385,50 @@ class QuestProvider with ChangeNotifier {
   Future<void> loadEmptyQuest() async {
     // 네트워크 오류 처리
     print('Quest Load Fail Load Empty Quest');
-    // 비로그인 상태.
-    var jsonString = await rootBundle.loadString('assets/quest.json');
-    var jsonResponse = jsonDecode(jsonString);
-    _questList = (jsonResponse['content'] as List)
-        .map((data) => Quest.fromJson(data))
-        .toList();
-    isLogin = false;
-    _isLoading = false;
-    notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+    Map<String, dynamic> queryParameters = {
+      'timeStamp': DateTime.now().millisecondsSinceEpoch.toString()
+    };
+
+    var url = Uri.http(
+      domain,
+      '/quest-api/v1/quests',
+      queryParameters,
+    );
+    try {
+      var response = await http.get(
+        url,
+      );
+
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+        List<dynamic> questsData = jsonResponse as List<dynamic>;
+
+        List<Quest> filteredQuests = questsData
+            .map((data) => Quest.fromJson(data))
+            // .where((quest) =>
+            //     quest.questDetails.questType !=
+            //     QuestType
+            //         .specificType) // QuestType.specificType은 3에 해당하는 enum값으로 가정
+            .toList();
+
+        // 이후 로직에서는 filteredQuests 리스트를 사용
+        _questList = filteredQuests;
+        print('Quest Load Success');
+        isLogin = false;
+        _isLoading = false;
+        notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+      } else {
+        print('Quest Load Fail Load Empty Quest');
+        isLogin = false;
+        _isLoading = false;
+        notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+      }
+    } catch (e) {
+      print('error : $e');
+      isLogin = false;
+      _isLoading = false;
+      notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+    }
   }
 }
 
@@ -532,7 +567,6 @@ Future<void> fetchSession() async {
   };
 
   var url = Uri.http(domain, '/session-api/v1/sessions', queryParameters);
-  print('$domain/rewardPage/');
 
   userSession = UserSession(
       sessionId: '', snsId: ''); // 16aa6395-6bda-45d1-9111-395e45215249
@@ -592,6 +626,7 @@ class RankingProvider with ChangeNotifier {
   // }
 
   Future<void> refreshData(String intervalType) async {
+    print('RankingRefreshdataStart');
     if (_isLoading) return;
     _isLoading = true;
     notifyListeners();
@@ -599,6 +634,7 @@ class RankingProvider with ChangeNotifier {
         [fatchRankGroups(intervalType), fetchRankingList(intervalType)]);
     _isLoading = false;
     notifyListeners();
+    print('RankingRefreshdataEnd');
   }
 
   UserRankingInfo? getThisUser(String snsId) {
@@ -638,11 +674,11 @@ class RankingProvider with ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
+        print('rankingList response Status 200');
         var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
         _userList = (jsonResponse['content'] as List)
             .map((data) => UserRankingInfo.fromJson(data))
             .toList();
-        print('ranking Load Success');
 
         _userList.sort((a, b) => a.ranking.compareTo(b.ranking));
         for (int i = 0; i < _userList.length; i++) {
@@ -743,12 +779,13 @@ class RankingProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         return response.body;
+      } else {
+        throw Exception('Network request for image failed');
       }
     } catch (e) {
-      //print('Failed to load MainBadge. Error: $e');
-      //print('해당 유저는 메인 배지가 설정되어 있지 않습니다.');
+      print('Error converting image: $e');
+      throw Exception('Network request for image failed');
     }
-    return '';
   }
 }
 

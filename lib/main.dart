@@ -14,7 +14,7 @@ Badge_completed? mainBadge;
 List<TestUser> testUserList = [];
 
 void main() async {
-  print('앱시작 : ${DateTime.now()}');
+  //print('앱시작 : ${DateTime.now()}');
   WidgetsFlutterBinding.ensureInitialized(); // Flutter 엔진과의 바인딩을 초기화합니다.
 
   await fetchSession();
@@ -36,7 +36,7 @@ void main() async {
           create: (context) => EventBannerProvider(), lazy: false),
     ], child: MyApp()),
   );
-  print('Provider create 끝 : ${DateTime.now()}');
+  //print('Provider create 끝 : ${DateTime.now()}');
 }
 
 Future<void> loadFonts() async {

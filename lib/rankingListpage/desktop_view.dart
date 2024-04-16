@@ -170,6 +170,10 @@ class _DesktopLayoutState_rankingList extends State<DesktopLayout_rankingList> {
         return SizedBox();
       }
       List<UserRankingInfo> userList = rankingProvider.userList;
+      if (userList.isEmpty) {
+        //print('userList 없음');
+        return SizedBox();
+      }
       return Stack(
         alignment: Alignment.center,
         clipBehavior: Clip.none,
@@ -207,6 +211,12 @@ class _DesktopLayoutState_rankingList extends State<DesktopLayout_rankingList> {
                     child: Image.network(
                       userList[num].profileUrl!,
                       fit: BoxFit.fitWidth,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Image.asset(
+                          'assets/userIcon.png',
+                          fit: BoxFit.fitWidth,
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -296,7 +306,7 @@ class _DesktopLayoutState_rankingList extends State<DesktopLayout_rankingList> {
           Consumer<RankingProvider>(
             builder: (context, value, child) {
               if (value.isLoading) {
-                buildText(
+                return buildText(
                   '불러오는중..',
                   TextType.p12R,
                   textColor: const Color(0xFF7D7D7D),
@@ -326,9 +336,18 @@ class _DesktopLayoutState_rankingList extends State<DesktopLayout_rankingList> {
   Widget buildRankGridList() {
     return Consumer<RankingProvider>(
         builder: (context, rankingProvider, child) {
-      List<UserRankingInfo> userList = rankingProvider.userList;
+      List<UserRankingInfo> userList = [];
       if (rankingProvider.isLoading) {
         return Column(children: [
+          SizedBox(height: 300),
+          CircularProgressIndicator(),
+          SizedBox(height: 300),
+        ]);
+      }
+
+      userList = rankingProvider.userList;
+      if (userList.isEmpty) {
+        return const Column(children: [
           SizedBox(height: 300),
           CircularProgressIndicator(),
           SizedBox(height: 300),
@@ -412,6 +431,13 @@ class _DesktopLayoutState_rankingList extends State<DesktopLayout_rankingList> {
                         child: Image.network(
                           userRankingInfo.profileUrl!,
                           fit: BoxFit.fitWidth,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              'assets/userIcon.png',
+                              fit: BoxFit.fitWidth,
+                              color: Color(0xffC3C3C3),
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(width: 24),

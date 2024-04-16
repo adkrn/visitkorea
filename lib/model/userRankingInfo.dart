@@ -1,4 +1,7 @@
 import 'dart:html';
+import 'dart:typed_data';
+import 'dart:ui';
+import 'package:image/image.dart' as img;
 
 class UserRankingInfo {
   final String rankBoardId;

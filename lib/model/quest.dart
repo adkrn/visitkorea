@@ -111,19 +111,20 @@ class Quest {
     }
 
     return Quest(
-      questSnsId: json['questSnsId'],
-      snsId: json['snsId'],
-      questDetails: QuestDetails.fromJson(json['quest']),
-      currentCompleteCount: json['currentCompleteCount'],
-      actionCount: json['actionCount'],
-      completed: json['completed'],
-      progressType: determineProgressType(
-          json['actionCount'],
-          json['quest']['actionCountValue'],
-          json['completed'],
-          json['quest']['activationStartDate'],
-          json['quest']['activationEndDate']),
-    );
+        questSnsId: json['questSnsId'] ?? '',
+        snsId: json['snsId'] ?? '',
+        questDetails: QuestDetails.fromJson(json['quest'] ?? json),
+        currentCompleteCount: json['currentCompleteCount'] ?? 0,
+        actionCount: json['actionCount'] ?? 0,
+        completed: json['completed'] ?? false,
+        progressType: json['actionCount'] != null
+            ? determineProgressType(
+                json['actionCount'],
+                json['quest']['actionCountValue'],
+                json['completed'],
+                json['quest']['activationStartDate'],
+                json['quest']['activationEndDate'])
+            : ProgressType.unProgressed);
   }
 }
 

@@ -27,24 +27,31 @@ class _RankingListPageState extends State<RankingListPage> {
 
   @override
   void didChangeDependencies() {
+    print('didChangeDependencies Start');
     super.didChangeDependencies();
     if (!_isProviderInitialized) {
       provider = Provider.of<RankingProvider>(context, listen: false);
-      _isProviderInitialized = true;
     }
+    print('didChangeDependencies End');
   }
 
   @override
   void initState() {
+    print('initState Start');
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      provider.refreshData('M');
-      _showDialog(context);
+    Future.microtask(() async {
+      await provider.refreshData('M');
+
+      setState(() {
+        _isProviderInitialized = true;
+        _showDialog(context);
+      });
     });
   }
 
   void _showDialog(BuildContext context) {
+    print('showDialogStart');
     if (_isShowPopup) return;
 
     _isShowPopup = true;
@@ -78,6 +85,7 @@ class _RankingListPageState extends State<RankingListPage> {
             },
           )),
     );
+    print('showDialogEnd');
   }
 
   @override
@@ -88,7 +96,15 @@ class _RankingListPageState extends State<RankingListPage> {
           appBarHeight: isMobile ? 98 : 90, onHoverd: onHoverdCallBack),
       body: Stack(
         children: [
-          loadLayout(context, isMobile),
+          _isProviderInitialized == true
+              ? loadLayout(context, isMobile)
+              : Center(
+                  child: Column(children: [
+                    SizedBox(height: 300),
+                    CircularProgressIndicator(),
+                    SizedBox(height: 300),
+                  ]),
+                ),
           if (isHoverd && isMobile == false) ...[
             MouseRegion(
               onEnter: (event) {
