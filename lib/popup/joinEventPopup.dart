@@ -34,28 +34,6 @@ class _JoinEventPopup extends State<JoinEventPopup> {
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
 
-  String collectionConsentText = """
-개인 정보 수집 및 이용 동의(필수) 세부 내용
- [개인 정보 수집 및 이용 동의]
-
-안녕하세요. 한국관광공사 대한민국 구석구석입니다.
-
-대한민국 구석구석 배지콕콕 서비스 내 랭킹전 참여 및 경품 발송을 위하여 고객님의 개인 정보 수집 및 이용에 관한 동의를 요청 드립니다.
-◎ 수집·이용 목적 : 배지콕콕 서비스 랭킹전 참여(랭킹 순위 제공), 배지콕콕 서비스 우수활동자 대상 경품 증정 목적
-◎ 수집 항목 (필수) : 이름, 휴대전화 번호
-◎ 개인 정보 보유 및 이용 기간 : 개인 정보 수집일로부터 동의 취소 시까지(단, 개인정보 동의 취소일 기준 다음 초 ‘월간랭킹 발표시’까지는 보유됨)
-
-수집된 개인정보는 보유 및 이용 기간이 종료되면 지체없이 파기하며, 별도로 보관하지 않습니다
-
-고객님께서는 개인정보보호법 15조에 따라, 개인정보 수집 및 활용에 동의를 거부할 권리가 있습니다. 그러나 동의를 거부할 경우 배지콕콕 서비스 랭킹전 및 이벤트 참여가 제한될 수 있습니다. 
-
-또한, 한국관광공사는 대한민국 구석구석 ‘배지콕콕’ 서비스의 안정적인 운영을 위하여 아래와 같이 개인정보 처리를 위·수탁 하고 있음을 안내드립니다. 
-
-◎ 수탁업체명 : (주)유니에스아이엔씨 / 업무 내용 :  ‘배지콕콕’ 서비스 운영
-
-위와 같이 개인정보를 수집 및 이용하는 것에 동의합니다.
-""";
-
   // 입력된 이름이 숫자인지 확인하는 함수
   bool isNameValid(String name) {
     return RegExp(r'^[가-힣]+$').hasMatch(name);
@@ -63,7 +41,8 @@ class _JoinEventPopup extends State<JoinEventPopup> {
 
   // 입력된 전화번호가 숫자인지 확인하는 함수
   bool isPhoneNumberValid(String phoneNumber) {
-    return RegExp(r'^[0-9]{1,12}$').hasMatch(phoneNumber);
+    // 010으로 시작하며 그 뒤에 8자리 숫자가 오는 패턴
+    return RegExp(r'^010[0-9]{8}$').hasMatch(phoneNumber);
   }
 
   void showAlert(String message) {
@@ -71,19 +50,24 @@ class _JoinEventPopup extends State<JoinEventPopup> {
       context: context,
       builder: (BuildContext context) {
         return CupertinoAlertDialog(
-          title: const Text('개인정보 수집 및 이용 동의'),
+          title: const Text(
+            '개인정보 수집 및 이용 동의',
+            style: TextStyle(fontFamily: 'NotoSansKR'),
+          ),
           content: SingleChildScrollView(
             // 내용이 길어질 수 있으므로 SingleChildScrollView 사용
             child: ListBody(
               // ListBody를 사용하여 자식들이 수직으로 배치되도록 함
               children: <Widget>[
-                Text(message),
+                Text(message, style: TextStyle(fontFamily: 'NotoSansKR')),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('확인', style: TextStyle(color: Colors.blue)),
+              child: const Text('확인',
+                  style:
+                      TextStyle(color: Colors.blue, fontFamily: 'NotoSansKR')),
               onPressed: () {
                 Navigator.of(context).pop(); // 대화상자 닫기
               },
@@ -111,7 +95,7 @@ class _JoinEventPopup extends State<JoinEventPopup> {
             isPrivacyAgree: isAgree,
             name: nameText,
             phoneNumber: phoneNumText,
-            isExposeRank: provider.userPrivacyInfo.isExposeRank,
+            isExposeRank: isAgree,
             isBadgeTesterMode: provider.userPrivacyInfo.isBadgeTesterMode,
           ), () {
         Navigator.of(context).pop(); // 대화상자 닫기
@@ -192,6 +176,7 @@ class _JoinEventPopup extends State<JoinEventPopup> {
                   borderSide: BorderSide(color: Color(0xFFCCCCCC), width: 1),
                   borderRadius: BorderRadius.all(Radius.circular(1))),
             ),
+            style: const TextStyle(fontFamily: 'NotoSansKR'),
           ),
         ),
         const SizedBox(height: 4),
@@ -217,6 +202,7 @@ class _JoinEventPopup extends State<JoinEventPopup> {
                   borderSide: BorderSide(color: Color(0xFFCCCCCC), width: 1),
                   borderRadius: BorderRadius.all(Radius.circular(1))),
             ),
+            style: const TextStyle(fontFamily: 'NotoSansKR'),
           ),
         ),
         SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
@@ -357,14 +343,16 @@ class _JoinEventPopup extends State<JoinEventPopup> {
                                       // 이 부분은 일반 텍스트 스타일입니다.
                                       TextSpan(
                                           text:
-                                              '[개인 정보 수집 및 이용 동의]\n\n안녕하세요. 한국관광공사 대한민국 구석구석입니다.\n\n대한민국 구석구석 배지콕콕 서비스 내 랭킹전 참여 및 경품 발송을 위하여 고객님의 개인 정보 수집 및 이용에 관한 동의를 요청 드립니다.\n◎ 수집·이용 목적 : 배지콕콕 서비스 랭킹전 참여(랭킹 순위 제공), 배지콕콕 서비스 우수활동자 대상 경품 증정 목적\n◎ 수집 항목 (필수) : 이름, 휴대전화 번호\n',
+                                              '안녕하세요. 한국관광공사 대한민국 구석구석입니다.\n\n대한민국 구석구석 배지콕콕 서비스 내 랭킹전 참여 및 경품 발송을 위하여 고객님의 개인 정보 수집 및 이용에 관한 동의를 요청 드립니다.\n◎ 수집 목적 : 배지콕콕 서비스 랭킹전 참여(랭킹 순위 제공), 배지콕콕 서비스 우수활동자 대상 경품 증정 목적\n◎ 수집 항목 (필수) : 이름, 휴대전화 번호\n',
                                           style: TextStyle(
                                               fontFamily: 'NotoSansKR')),
-                                      TextSpan(text: '◎ 개인 정보 보유 및 이용 기간 :'),
+                                      TextSpan(
+                                          text: '◎ 사용자의 개인 정보 보유 및 이용 기간:',
+                                          style: TextStyle(
+                                              fontFamily: 'NotoSansKR')),
                                       // 이 부분은 굵은 글씨로 표시됩니다.
                                       TextSpan(
-                                        text:
-                                            ' 개인 정보 수집일로부터 동의 취소 시까지(단, 개인정보 동의 취소일 기준 다음 초 ‘월간랭킹 발표시’까지는 보유됨)',
+                                        text: ' 개인 정보 수집일로부터 동의 취소 시까지',
                                         style: TextStyle(
                                             fontFamily: 'NotoSansKR',
                                             fontWeight: FontWeight.bold,
@@ -375,7 +363,7 @@ class _JoinEventPopup extends State<JoinEventPopup> {
                                       // 마무리 부분은 다시 일반 스타일의 텍스트입니다.
                                       TextSpan(
                                           text:
-                                              '\n\n수집된 개인정보는 보유 및 이용 기간이 종료되면 지체없이 파기하며, 별도로 보관하지 않습니다\n\n고객님께서는 개인정보보호법 15조에 따라, 개인정보 수집 및 활용에 동의를 거부할 권리가 있습니다. 그러나 동의를 거부할 경우 배지콕콕 서비스 랭킹전 및 이벤트 참여가 제한될 수 있습니다.\n\n또한, 한국관광공사는 대한민국 구석구석 ‘배지콕콕’ 서비스의 안정적인 운영을 위하여 아래와 같이 개인정보 처리를 위·수탁 하고 있음을 안내드립니다.\n\n◎ 수탁업체명 : (주)유니에스아이엔씨 / 업무 내용 :  ‘배지콕콕’ 서비스 운영\n\n위와 같이 개인정보를 수집 및 이용하는 것에 동의합니다.',
+                                              '\n\n고객님께서는 위의 개인정보 수집 및 이용에 대해 동의를 거부할 권리가 있습니다. 그러나 동의를 거부할 경우 배지콕콕 서비스 랭킹전 및 이벤트 참여가 제한될 수 있습니다.\n\n또한, 한국관광공사는 대한민국 구석구석 ‘배지콕콕’ 서비스의 안정적인 운영을 위하여 아래와 같이 개인정보 처리를 위·수탁 하고 있음을 안내드립니다.\n\n◎ 수탁업체명 : (주)유니에스아이엔씨 / 업무 내용 : ‘배지콕콕’ 서비스 운영\n\n위와 같이 개인정보를 수집 및 이용하는 것에 동의합니다.',
                                           style: TextStyle(
                                               fontFamily: 'NotoSansKR')),
                                     ],

@@ -17,24 +17,19 @@ import 'package:visitkorea/myBadgeCollections/myBadgeCollections.dart';
 import 'dart:js' as js;
 
 const String _baseUrl = 'assets/';
-
-// 팝업메뉴 값
-Map<String, String> dropdownValues = {
-  '이벤트': '2024년',
-  '일반활동': '2024년',
-  '전국탐방': '2024년',
-};
-
-Map<String, double> dropdownMenuPos = {
-  '이벤트': 20,
-  '일반활동': 20,
-  '전국탐방': 20,
-};
-
-List<double> dropdownMenuPosList = [20, 60, 100];
+late UserPrivacyInfoProvider provider;
 
 List<String> dropdownValuelist = <String>['2024년'];
 
+Map<String, List<String>> dropDownValuelist = {
+  '이벤트': dropdownValuelist,
+  '일반활동': dropdownValuelist
+};
+
+Map<String, String> dropDownValueQuestType = {
+  '이벤트': '2024년',
+  '일반활동': '2024년',
+};
 String getQuestSectionTitleByType(QuestType type) {
   switch (type) {
     case QuestType.event:
@@ -54,41 +49,40 @@ class QuestListPage extends StatefulWidget {
 }
 
 class _QuestListPageState extends State<QuestListPage> {
-  bool isHoverd = false;
-  void onHoverdCallBack() {
-    setState(() {
-      isHoverd = true;
+  bool _isProviderInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    print('didChangeDependencies Start');
+    super.didChangeDependencies();
+    if (!_isProviderInitialized) {
+      provider = Provider.of<UserPrivacyInfoProvider>(context, listen: false);
+    }
+    print('didChangeDependencies End');
+  }
+
+  @override
+  void initState() {
+    print('initState Start');
+    super.initState();
+
+    Future.microtask(() async {
+      await provider.refreshData();
+
+      setState(() {
+        _isProviderInitialized = true;
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
     bool isMobile = MediaQuery.of(context).size.width < 1000;
+
     return Scaffold(
-      resizeToAvoidBottomInset: true,
-      appBar: CustomAppBar(
-          appBarHeight: isMobile ? 98 : 90, onHoverd: onHoverdCallBack),
-      body: isMobile
-          ? MobileLayout_questList()
-          : Stack(
-              children: [
-                DesktopLayout_questList(),
-                if (isHoverd) ...[
-                  MouseRegion(
-                    onEnter: (event) {
-                      setState(() {
-                        isHoverd = false;
-                      });
-                    },
-                    child: Container(
-                      color: Colors.black.withOpacity(0.5),
-                    ),
-                  ),
-                  CustomLnb(),
-                ]
-              ],
-            ),
-    );
+        resizeToAvoidBottomInset: true,
+        appBar: CustomAppBar(appBarHeight: isMobile ? 98 : 90),
+        body: isMobile ? MobileLayout_questList() : DesktopLayout_questList());
   }
 }
 
@@ -108,8 +102,9 @@ List<Quest> filterQuests(List<Quest> quests, List<Badge_completed> badges) {
 
         badge.badgeinfo.rewardPoint = quest.questDetails.rewardPoint;
       } catch (e) {
-        print('퀘스트 완료안했는데 배지 보유중');
+        //print('퀘스트 완료안했는데 배지 보유중');
       }
+
       if (quest.questDetails.nextQuestId != null) {
         filterQuest.remove(quest);
       }
@@ -171,6 +166,8 @@ Widget getQuestImageByProgressType(BuildContext context, Quest quest,
         return '${_baseUrl}enable/${quest.questDetails.enableBadge!.imgName}.png';
       case ProgressType.receive:
         return '${_baseUrl}enable/${quest.questDetails.enableBadge!.imgName}.png';
+      case ProgressType.expiration:
+        return '${_baseUrl}disable/${quest.questDetails.disableBadge!.imgName}.png';
       default:
         throw Exception('잘못된 퀘스트 정보입니다.');
     }
@@ -260,6 +257,38 @@ void launchURL() async {
   } else {
     throw 'Could not launch $url';
   }
+}
+
+void showRankAlert(String message, BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return CupertinoAlertDialog(
+        title: const Text(
+          '랭킹전',
+          style: TextStyle(fontFamily: 'NotoSansKR'),
+        ),
+        content: SingleChildScrollView(
+          // 내용이 길어질 수 있으므로 SingleChildScrollView 사용
+          child: ListBody(
+            // ListBody를 사용하여 자식들이 수직으로 배치되도록 함
+            children: <Widget>[
+              Text(message, style: TextStyle(fontFamily: 'NotoSansKR')),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('확인',
+                style: TextStyle(color: Colors.blue, fontFamily: 'NotoSansKR')),
+            onPressed: () {
+              Navigator.of(context).pop(); // 대화상자 닫기
+            },
+          ),
+        ],
+      );
+    },
+  );
 }
 
 void buildRankPopup(BuildContext context) {
@@ -355,8 +384,12 @@ void showNonLoginAlertDialog(BuildContext context) {
   showCupertinoModalPopup<void>(
     context: context,
     builder: (BuildContext context) => CupertinoAlertDialog(
-      title: const Text('알림'),
-      content: const Text('로그인이 필요한 서비스입니다'),
+      title: const Text(
+        '알림',
+        style: TextStyle(fontFamily: 'NotoSansKR'),
+      ),
+      content: const Text('로그인이 필요한 서비스입니다',
+          style: TextStyle(fontFamily: 'NotoSansKR')),
       actions: <CupertinoDialogAction>[
         CupertinoDialogAction(
           /// This parameter indicates the action would perform
@@ -369,7 +402,8 @@ void showNonLoginAlertDialog(BuildContext context) {
             redirectToUrl(url);
             Navigator.pop(context);
           },
-          child: const Text('확인', style: TextStyle(color: Colors.blue)),
+          child: const Text('확인',
+              style: TextStyle(color: Colors.blue, fontFamily: 'NotoSansKR')),
         ),
       ],
     ),
@@ -407,19 +441,24 @@ class _UserInfoAgreementCancelPopupState
         context: context,
         builder: (BuildContext context) {
           return CupertinoAlertDialog(
-            title: const Text('개인정보 수집 및 이용 동의'),
+            title: const Text(
+              '개인정보 수집 및 이용 동의 취소',
+              style: TextStyle(fontFamily: 'NotoSansKR'),
+            ),
             content: SingleChildScrollView(
               // 내용이 길어질 수 있으므로 SingleChildScrollView 사용
               child: ListBody(
                 // ListBody를 사용하여 자식들이 수직으로 배치되도록 함
                 children: <Widget>[
-                  Text(message),
+                  Text(message, style: TextStyle(fontFamily: 'NotoSansKR')),
                 ],
               ),
             ),
             actions: <Widget>[
               TextButton(
-                child: const Text('확인', style: TextStyle(color: Colors.blue)),
+                child: const Text('확인',
+                    style: TextStyle(
+                        color: Colors.blue, fontFamily: 'NotoSansKR')),
                 onPressed: () {
                   Navigator.of(context).pop(); // 대화상자 닫기
                 },
@@ -445,7 +484,7 @@ class _UserInfoAgreementCancelPopupState
             color: Colors.transparent,
             child: Container(
               width: isMobile ? 358 : 600,
-              height: isMobile ? 373 : 348,
+              //height: isMobile ? 373 : 348,
               padding: const EdgeInsets.all(16),
               clipBehavior: Clip.antiAlias,
               decoration: ShapeDecoration(
@@ -495,8 +534,8 @@ class _UserInfoAgreementCancelPopupState
                   SizedBox(
                     child: buildText(
                         isMobile
-                            ? '개인정보 수집 및 이용 동의 취소 시, 배지콕콕\n랭킹전 및 경품 이벤트 참여가 제한됩니다.'
-                            : '개인정보 수집 및 이용 동의 취소 시,\n배지콕콕 랭킹전 및 경품 이벤트 참여가 제한됩니다.',
+                            ? '개인정보 수집 및 이용 동의 취소 시,\n배지콕콕 랭킹전 및 경품 이벤트 참여가 제한되며 월간랭킹 선정에서 제외될 수 있습니다.'
+                            : '개인정보 수집 및 이용 동의 취소 시, 배지콕콕\n랭킹전 및 경품 이벤트 참여가 제한되며 월간랭킹 선정에서 제외될 수 있습니다.',
                         TextType.p16R,
                         textColor: const Color(0xff333333),
                         align: TextAlign.left),
@@ -504,14 +543,13 @@ class _UserInfoAgreementCancelPopupState
                   SizedBox(height: isMobile ? mobileSpan : deskTopSpan),
                   Container(
                     width: double.infinity,
-                    height: 82,
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
                     decoration: const BoxDecoration(color: Color(0xFFF1F1F1)),
                     child: buildText(
                         isMobile
-                            ? '• 개인정보 수집 및 이용 동의 취소 후, 배지콕콕 페이지에서 랭킹전 및 이벤트 참여 재신청이 가능합니다. 입력해주신 개인정보는 "익월 월간랭킹 발표 후" 모두 파기됩니다.'
-                            : '• 개인정보 수집 및 이용 동의 취소 후, 배지콕콕 페이지에서 랭킹전 및 이벤트 참여\n   재신청이 가능합니다. 입력해주신 개인정보는 "익월 월간랭킹 발표 후" 모두 파기됩니다.',
+                            ? '• 개인정보 수집 및 이용 동의 취소 후, 배지콕콕 페이지에서 랭킹전 및 이벤트 참여 재신청이 가능합니다.'
+                            : '• 개인정보 수집 및 이용 동의 취소 후, 배지콕콕 페이지에서 랭킹전 및 이벤트 참여\n   재신청이 가능합니다.',
                         TextType.p14M,
                         align: TextAlign.left),
                   ),
@@ -539,9 +577,8 @@ class _UserInfoAgreementCancelPopupState
                           style: TextStyle(
                             color: Color(0xFF222222),
                             fontSize: 15,
-                            fontFamily: 'Spoqa Han Sans Neo',
+                            fontFamily: 'NotoSansKR',
                             fontWeight: FontWeight.w400,
-                            letterSpacing: -0.75,
                           ),
                         ),
                       ],
@@ -561,7 +598,6 @@ class _UserInfoAgreementCancelPopupState
                                     horizontal: 16, vertical: 11)),
                             backgroundColor:
                                 MaterialStatePropertyAll(Colors.white),
-                            fixedSize: MaterialStatePropertyAll(Size(155, 42)),
                             shape: MaterialStatePropertyAll(
                               RoundedRectangleBorder(
                                 borderRadius: BorderRadius.all(
@@ -592,7 +628,7 @@ class _UserInfoAgreementCancelPopupState
                                 ),
                                 () {
                                   Navigator.of(context).pop();
-                                  showAlert('취소 완료되었습니다.');
+                                  showAlert('랭킹전 참여가 취소되었습니다.');
                                 },
                               );
                             } else {
@@ -605,7 +641,6 @@ class _UserInfoAgreementCancelPopupState
                                     horizontal: 16, vertical: 11)),
                             backgroundColor:
                                 MaterialStatePropertyAll(Color(0xFF001941)),
-                            fixedSize: MaterialStatePropertyAll(Size(155, 42)),
                             shape: MaterialStatePropertyAll(
                               RoundedRectangleBorder(
                                 borderRadius: BorderRadius.all(
@@ -627,6 +662,7 @@ class _UserInfoAgreementCancelPopupState
   }
 }
 
+/// 메인 페이지 유저 배너
 class MainBanner extends StatefulWidget {
   MainBanner({
     Key? key,
@@ -637,6 +673,41 @@ class MainBanner extends StatefulWidget {
 }
 
 class _MainBannerState extends State<MainBanner> {
+  void openRankingPage() async {
+    DateTime now = DateTime.now();
+    DateTime openDate = DateTime(2024, 4, 29);
+    DateTime rankingOpenDate = DateTime(2024, 6, 3);
+
+    try {
+      RankingProvider rankingProvider =
+          Provider.of<RankingProvider>(context, listen: false);
+      await rankingProvider.refreshData('M');
+
+      if (now.isAfter(openDate) && now.isBefore(rankingOpenDate)) {
+        buildRankPopup(context);
+      } else {
+        UserPrivacyInfo privacyInfo = provider.userPrivacyInfo;
+
+        if (privacyInfo.isPrivacyAgree) {
+          if (now.isBefore(rankingProvider.groupsInfo.confirmDate)) {
+            buildRankPopup(context);
+          } else {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RankingListPage(),
+                ));
+          }
+        } else {
+          showRankAlert('랭킹전을 참여하려면 개인정보수집동의가 필요합니다.', context);
+        }
+      }
+    } catch (e) {
+      print('error : $e');
+      buildRankPopup(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double widthSize = MediaQuery.of(context).size.width;
@@ -780,6 +851,7 @@ class _MainBannerState extends State<MainBanner> {
                 if (provider.isLoading) {
                   return buildText('불러오는중..', TextType.p14R);
                 }
+
                 return Text(
                   userSession != null
                       ? '${provider.userInfo.snsUserName}님'
@@ -841,10 +913,7 @@ class _MainBannerState extends State<MainBanner> {
           children: [
             ElevatedButton(
               onPressed: () {
-                //buildRankPopup(context);
-                //'랭킹보기' 버튼 클릭 시 실행할 코드
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => RankingListPage()));
+                openRankingPage();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF001940), // 버튼 배경색
@@ -887,10 +956,7 @@ class _MainBannerState extends State<MainBanner> {
           Expanded(
             child: ElevatedButton(
               onPressed: () {
-                //buildRankPopup(context);
-                // '랭킹보기' 버튼 클릭 시 실행할 코드
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => RankingListPage()));
+                openRankingPage();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF001940), // 버튼 배경색
@@ -969,7 +1035,9 @@ class _MainBannerState extends State<MainBanner> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
         InkWell(
-          onTap: () {
+          onTap: () async {
+            await Provider.of<UserHistoryProvider>(context, listen: false)
+                .refreshData('M');
             Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => MyActivityHistory()),
             );

@@ -37,7 +37,7 @@ class _DesktopLayoutState_myBadgeCollections
               const SizedBox(height: 16),
               buildBadgeSection(context, QuestType.activity, true),
               const SizedBox(height: 16),
-              buildBadgeSection(context, QuestType.exploer, true),
+              buildBadgeSection(context, QuestType.exploer, false),
             ],
           ),
         ),
@@ -51,6 +51,25 @@ class _DesktopLayoutState_myBadgeCollections
     QuestType type,
     bool isDropDownButton,
   ) {
+    List<Badge_completed> setDuringBadgeList(
+        String dropDownValue, List<Badge_completed> badges) {
+      List<Badge_completed> filterdBadges = badges.toList();
+
+      for (var badge in badges) {
+        if (dropDownValue == '2024년') {
+          if (badge.createDate.year != 2024) {
+            filterdBadges.remove(badge);
+          }
+        } else if (dropDownValue == '2025년') {
+          if (badge.createDate.year != 2025) {
+            filterdBadges.remove(badge);
+          }
+        }
+      }
+
+      return filterdBadges;
+    }
+
     return Consumer<BadgeProvider>(builder: (context, provider, child) {
       if (provider.isLoading) {
         // 어느 하나라도 데이터 로딩 중이면 로딩 인디케이터 표시
@@ -61,11 +80,26 @@ class _DesktopLayoutState_myBadgeCollections
           .toList();
       // 보유한 배지가 있는지 확인.
       bool hasBadge = badges.any((element) => badges != []);
+
+      String title = getBadgeSectionTitleByType(type);
+
+      DateTime now = DateTime.now();
+
+      if (isDropDownButton) {
+        if (badgeDropdownValuelist[title]!.contains('${now.year}년') == false) {
+          badgeDropdownValuelist[title]!.add('${now.year}년');
+        }
+        if (hasBadge) {
+          badges = setDuringBadgeList(
+              badgeDropdownValuelist[title].toString(), badges);
+          hasBadge = badges.any((element) => badges != []);
+        }
+      }
+
       if (type == QuestType.event && hasBadge == false) {
         return SizedBox();
       }
 
-      String title = getBadgeSectionTitleByType(type);
       return Padding(
         padding: const EdgeInsets.only(bottom: 16, top: 16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
@@ -75,9 +109,13 @@ class _DesktopLayoutState_myBadgeCollections
               buildText(title, TextType.h3),
               if (isDropDownButton)
                 CustomDropdownMenu(
-                  menuItems: badgeDropdownValuelist,
-                  initialValue: '2024년',
+                  menuItems: badgeDropdownValuelist[title]!,
+                  initialValue: '${now.year}년',
                   isEnable: true,
+                  onItemSelected: (String selectedValue) {
+                    badgeDropdownValues[title] = selectedValue;
+                    provider.refreshBadges();
+                  },
                 ),
             ],
           ),

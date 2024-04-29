@@ -3,18 +3,20 @@ import 'dart:html' as html;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:visitkorea/model/quest.dart';
 import '../common_widgets.dart';
 import '../jsonLoader.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
-import 'dart:ui' as ui;
+import 'package:http/http.dart' as http;
+import '../main.dart';
 import 'package:screenshot/screenshot.dart';
 import 'dart:js' as js;
+import 'dart:convert';
 
 OverlayEntry? overlayEntry;
 
@@ -52,6 +54,8 @@ class BadgeInfoPopup extends StatefulWidget {
 
 class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
   bool isDownloadPopup = false;
+  var blob;
+  var blobUrl;
 
   ScreenshotController screenshotController = ScreenshotController();
 
@@ -63,37 +67,104 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
     String userAgent = js.context.callMethod('getUserAgent').toString();
     print('User Agent: $userAgent');
 
+    // Future<void> downloadFile(String imgUrl) async {
+    //   Dio dio = Dio();
+
+    //   try {
+    //     var dir = await getApplicationDocumentsDirectory();
+    //     await dio.download(imgUrl, '${dir.path}/myimage.png',
+    //         onReceiveProgress: (rec, total) {
+    //       print('Rec : $rec , Total : $total');
+    //       file = '${dir.path}/myimage.png';
+    //     });
+    //   } catch (e) {
+    //     print(e);
+    //   }
+
+    //   print('Download completed');
+    // }
+
     return Future.delayed(
       const Duration(milliseconds: 20),
       () async {
-        RenderRepaintBoundary? boundary =
-            src.currentContext!.findRenderObject() as RenderRepaintBoundary?;
-        ui.Image image = await boundary!.toImage();
-        ByteData? byteData =
-            await image.toByteData(format: ui.ImageByteFormat.png);
-        Uint8List pngBytes = byteData!.buffer.asUint8List();
-        final blob = html.Blob([pngBytes]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
-
-        if (userAgent.toLowerCase().contains('iphone') ||
-            userAgent.toLowerCase().contains('ipad')) {
-          print('iOS');
-          js.context.callMethod('downloadImageIos', [url]);
-        } else if (userAgent.toLowerCase().contains('android')) {
-          js.context.callMethod('downloadImageAndroid', [url]);
-          print('Android call method!');
-        } else if (userAgent.toLowerCase().contains('macintosh')) {
-          print('iOS');
-          js.context.callMethod('downloadImageIos', [url]);
-        } else if (userAgent.toLowerCase().contains('ipod')) {
-          print('iOS');
-          js.context.callMethod('downloadImageIos', [url]);
-        } else {
-          print('Other');
-          ShowCapturedWidget(pngBytes, url);
+        void showDebugAlert(String debuglog) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return CupertinoAlertDialog(
+                title: const Text(
+                  '다운로드 에러',
+                  style: TextStyle(fontFamily: 'NotoSansKR'),
+                ),
+                content: SingleChildScrollView(
+                  // 내용이 길어질 수 있으므로 SingleChildScrollView 사용
+                  child: ListBody(
+                    // ListBody를 사용하여 자식들이 수직으로 배치되도록 함
+                    children: <Widget>[
+                      Text(debuglog,
+                          style: TextStyle(fontFamily: 'NotoSansKR')),
+                    ],
+                  ),
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('확인',
+                        style: TextStyle(
+                            fontFamily: 'NotoSansKR', color: Colors.blue)),
+                    onPressed: () {
+                      Navigator.of(context).pop(); // 대화상자 닫기
+                    },
+                  ),
+                ],
+              );
+            },
+          );
         }
 
-        //js.context.callMethod('downloadImageAndroid', [url]);
+        Map<String, dynamic> queryParameters = {
+          'badgeSnsId': widget.badge.badgeSnsId,
+          'timeStamp': DateTime.now().millisecondsSinceEpoch.toString()
+        };
+        final url = Uri.http(domain, '/quest-api/v1/image', queryParameters);
+        try {
+          var response = await http.get(
+            url,
+            headers: {
+              'SNS_ID': '${userSession?.snsId}',
+              'Cache-Control': 'no-store', // 캐시 방지
+              'Pragma': 'no-store', // 캐시 방지
+              'Expires': '0', // 캐시 방지
+            },
+          );
+
+          if (response.statusCode == 200) {
+            blob = html.Blob([response.bodyBytes]);
+            blobUrl = html.Url.createObjectUrl(blob);
+            bool isApp = userAgent.toLowerCase().contains('visitkor');
+
+            if (isApp) {
+              print('웹뷰에서는 jsMethod 실행');
+              if (userAgent.toLowerCase().contains('iphone') ||
+                  userAgent.toLowerCase().contains('ipad')) {
+                print('iOS Blob url in flutter :: $blobUrl');
+                js.context.callMethod('downloadImageIos', [blob]);
+              } else if (userAgent.toLowerCase().contains('android')) {
+                print('Android Blob url in flutter :: $blobUrl');
+                js.context.callMethod('downloadImageAndroid', [blob]);
+              } else {
+                print('Other');
+                ShowCapturedWidget(response.bodyBytes, blobUrl);
+              }
+            } else {
+              print('웹에서는 ShowCapturedWidget 실행');
+              ShowCapturedWidget(response.bodyBytes, blobUrl);
+            }
+          }
+        } catch (e) {
+          showDebugAlert('User Agent: $userAgent\n error : $e');
+          //showDebugAlert('error : $e');
+          print('error : $e');
+        }
       },
     );
 
@@ -227,7 +298,8 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
             : Center(
                 child: Container(
                   width: 360,
-                  padding: const EdgeInsets.all(16),
+                  padding:
+                      EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -239,18 +311,18 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
                         alignment: Alignment.topRight,
                         child: IconButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.close, size: 30),
+                          icon: const Icon(Icons.close, size: 16),
                         ),
                       ),
                       const Text(
                         '배지 이미지를 저장하여\nSNS에 자랑해보세요!',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            fontSize: 24,
+                            fontSize: 20,
                             fontFamily: 'NotoSansKR',
                             fontWeight: FontWeight.w700),
                       ),
-                      const SizedBox(height: 56),
+                      const SizedBox(height: 24),
                       Screenshot(
                         controller: screenshotController,
                         child: RepaintBoundary(
@@ -320,7 +392,7 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 56),
+                      const SizedBox(height: 24),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF001941),
@@ -342,7 +414,6 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
                           getUserAgent();
                         },
                       ),
-                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
@@ -389,10 +460,14 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
                   builder: (BuildContext context) {
                     // 확인/취소 버튼이 있는 AlertDialog 생성
                     return CupertinoAlertDialog(
-                      title: const Text('대표 배지로 설정하시겠습니까?'),
+                      title: const Text(
+                        '대표 배지로 설정하시겠습니까?',
+                        style: TextStyle(fontFamily: 'NotoSansKR'),
+                      ),
                       actions: <Widget>[
                         TextButton(
-                          child: const Text('취소'),
+                          child: const Text('취소',
+                              style: TextStyle(fontFamily: 'NotoSansKR')),
                           onPressed: () {
                             Navigator.of(context).pop(); // 다이얼로그 닫기
                           },
@@ -400,7 +475,8 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
                         TextButton(
                           child: const Text(
                             '확인',
-                            style: TextStyle(color: Colors.blue),
+                            style: TextStyle(
+                                fontFamily: 'NotoSansKR', color: Colors.blue),
                           ),
                           onPressed: () {
                             // 대표 배지 설정 로직을 여기에 추가하세요.
@@ -488,11 +564,20 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
       barrierDismissible: false, // 사용자가 다이얼로그 바깥을 탭해도 닫히지 않도록 설정
       builder: (BuildContext context) {
         return CupertinoAlertDialog(
-          title: Text('설정 완료'),
-          content: Text('대표 배지로 설정되었습니다.'),
+          title: Text(
+            '설정 완료',
+            style: TextStyle(fontFamily: 'NotoSansKR'),
+          ),
+          content: Text(
+            '대표 배지로 설정되었습니다.',
+            style: TextStyle(fontFamily: 'NotoSansKR'),
+          ),
           actions: <Widget>[
             TextButton(
-              child: Text('확인'),
+              child: Text(
+                '확인',
+                style: TextStyle(fontFamily: 'NotoSansKR'),
+              ),
               onPressed: () {
                 Navigator.of(context).pop(); // 알럿 닫기
                 Navigator.of(context).pop(); // 팝업 닫기

@@ -1,6 +1,4 @@
-import 'package:http/http.dart' as http;
-import '../main.dart';
-
+// 퀘스트 타입값
 enum QuestType { event, activity, exploer, specificType }
 
 QuestType getQuestType(int questTypeValue) {
@@ -18,6 +16,7 @@ QuestType getQuestType(int questTypeValue) {
   }
 }
 
+// 퀘스트 상태값
 enum ExposeStatus { waiting, testing, opening }
 
 ExposeStatus getExpseStatus(int exposeStatus) {
@@ -33,6 +32,7 @@ ExposeStatus getExpseStatus(int exposeStatus) {
   }
 }
 
+// 퀘스트 등급값
 String getQuestGrade(int gradeValue) {
   switch (gradeValue) {
     case 0:
@@ -48,18 +48,21 @@ String getQuestGrade(int gradeValue) {
   }
 }
 
+// 퀘스트 진행 상태값
 enum ProgressType { unProgressed, progress, completed, receive, expiration }
 
+// 랭킹전 참여 배너 노출 여부
 class BannerInfo {
   final String id;
   final bool commonBanner;
-  final bool subBanner;
+  final bool subBanner; // 임시로 서브배너가 추가될 상황에 대비해 미리 만들어놨다고함.
 
   BannerInfo(
       {required this.id, required this.commonBanner, required this.subBanner});
 
   factory BannerInfo.fromJson(List<dynamic> json) {
-    // 급한대로 임시로 처리 리스트 항목이 늘어날 경우에는 다른 처리가 필요.
+    // 급한대로 임시로 리스트에서 0번째 값 불러오는걸로 처리,
+    // 리스트 항목이 늘어날 경우에는 다른 처리가 필요.
     var info = json[0];
     return BannerInfo(
         id: info['id'],
@@ -68,6 +71,7 @@ class BannerInfo {
   }
 }
 
+// 퀘스트 데이터 모델
 class Quest {
   final String questSnsId;
   final String snsId;
@@ -88,6 +92,7 @@ class Quest {
   });
 
   factory Quest.fromJson(Map<String, dynamic> json) {
+    // 퀘스트 진행 상태를 설정하는 함수
     ProgressType determineProgressType(int actionCount, int actionCountValue,
         bool completed, String startTime, String endTime) {
       double progressRatio = actionCount / actionCountValue;
@@ -96,6 +101,7 @@ class Quest {
 
       if (now.isBefore(DateTime.parse(startTime)) ||
           now.isAfter(DateTime.parse(endTime))) {
+        // 기간이 지난 퀘스트는 기간 만료를 띄우기 위해 진행 상태값을 expiration으로 설정.
         return ProgressType.expiration;
       } else {
         if (progressRatio == 0) {
@@ -239,6 +245,8 @@ class QuestActionType {
   }
 }
 
+// 퀘스트 데이터 모델에 쓰이는 배지 데이터
+// enable, disable, unknown 배지 데이터는 이 모델로 쓰임.
 class Badge_visitKorean {
   final String badgeId;
   final String name;
@@ -266,11 +274,13 @@ class Badge_visitKorean {
   }
 }
 
+// 배지 도감에 쓰이는 배지 데이터 모델
 class Badge_completed {
   final String badgeSnsId;
   final Badge_info badgeinfo;
   final String snsId;
   final DateTime createDate;
+  ExposeStatus exposeStatus;
   bool isUse;
 
   Badge_completed({
@@ -279,16 +289,17 @@ class Badge_completed {
     required this.snsId,
     required this.isUse,
     required this.createDate,
+    required this.exposeStatus,
   });
 
   factory Badge_completed.fromJson(Map<String, dynamic> json) {
     return Badge_completed(
-      badgeSnsId: json['badgeSnsId'],
-      badgeinfo: Badge_info.fromJson(json['badge']),
-      snsId: json['snsId'],
-      isUse: json['isUse'],
-      createDate: DateTime.fromMillisecondsSinceEpoch(json['createDate']),
-    );
+        badgeSnsId: json['badgeSnsId'],
+        badgeinfo: Badge_info.fromJson(json['badge']),
+        snsId: json['snsId'],
+        isUse: json['isUse'],
+        createDate: DateTime.fromMillisecondsSinceEpoch(json['createDate']),
+        exposeStatus: ExposeStatus.opening);
   }
 }
 

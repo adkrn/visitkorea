@@ -8,18 +8,14 @@ import '../model/quest.dart';
 Map<String, String> badgeDropdownValues = {
   '이벤트': '2024년',
   '일반활동': '2024년',
-  '전국탐방': '2024년',
 };
 
-Map<String, double> badgeDropdownMenuPos = {
-  '이벤트': 20,
-  '일반활동': 20,
-  '전국탐방': 20,
+List<String> dropdownValuelist = <String>['2024년'];
+
+Map<String, List<String>> badgeDropdownValuelist = {
+  '이벤트': dropdownValuelist,
+  '일반활동': dropdownValuelist
 };
-
-List<double> badgeDropdownMenuPosList = [20, 60, 100];
-
-List<String> badgeDropdownValuelist = <String>['2024년'];
 
 String getBadgeSectionTitleByType(QuestType type) {
   switch (type) {
@@ -42,39 +38,14 @@ class MyBadgeCollections extends StatefulWidget {
 bool isLoad = false;
 
 class _MyBadgeCollectionsState extends State<MyBadgeCollections> {
-  bool isHoverd = false;
-  void onHoverdCallBack() {
-    setState(() {
-      isHoverd = true;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     bool isMobile = MediaQuery.of(context).size.width < 1000;
     return Scaffold(
-      appBar:
-          CustomAppBar(appBarHeight: isMobile ? 98 : 90, onHoverd: onHoverdCallBack),
+      appBar: CustomAppBar(appBarHeight: isMobile ? 98 : 90),
       body: isMobile
           ? MobileLayout_myBadgeCollections()
-          : Stack(
-              children: [
-                DesktopLayout_myBadgeCollections(),
-                if (isHoverd) ...[
-                  MouseRegion(
-                    onEnter: (event) {
-                      setState(() {
-                        isHoverd = false;
-                      });
-                    },
-                    child: Container(
-                      color: Colors.black.withOpacity(0.5),
-                    ),
-                  ),
-                  CustomLnb(),
-                ]
-              ],
-            ),
+          : DesktopLayout_myBadgeCollections(),
     );
   }
 }

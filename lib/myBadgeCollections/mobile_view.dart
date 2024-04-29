@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../common_widgets.dart';
 import '../model/quest.dart';
@@ -39,7 +40,7 @@ class _MobileLayoutState_myBadgeCollections
                 const SizedBox(height: 16),
                 buildBadgeSection(context, QuestType.activity, true),
                 const SizedBox(height: 16),
-                buildBadgeSection(context, QuestType.exploer, true),
+                buildBadgeSection(context, QuestType.exploer, false),
                 const SizedBox(height: 16),
               ],
             ),
@@ -68,6 +69,25 @@ class _MobileLayoutState_myBadgeCollections
     double imageSize = 84 * (availableWidth / 390);
     if (imageSize > 100) imageSize = 100;
 
+    List<Badge_completed> setDuringBadgeList(
+        String dropDownValue, List<Badge_completed> badges) {
+      List<Badge_completed> filterdBadges = badges.toList();
+
+      for (var badge in badges) {
+        if (dropDownValue == '2024년') {
+          if (badge.createDate.year != 2024) {
+            filterdBadges.remove(badge);
+          }
+        } else if (dropDownValue == '2025년') {
+          if (badge.createDate.year != 2025) {
+            filterdBadges.remove(badge);
+          }
+        }
+      }
+
+      return filterdBadges;
+    }
+
     //print('imageSize : $imageSize');
     return Consumer<BadgeProvider>(
       builder: (context, provider, child) {
@@ -79,14 +99,29 @@ class _MobileLayoutState_myBadgeCollections
         List<Badge_completed> badges = provider.badgeList
             .where((e) => e.badgeinfo.badgeType == type)
             .toList();
+
         // 보유한 배지가 있는지 확인.
         bool hasBadge = badges.any((element) => badges != []);
+
+        String title = getBadgeSectionTitleByType(type);
+
+        DateTime now = DateTime.now();
+
+        if (isDropDownButton) {
+          if (badgeDropdownValuelist[title]!.contains('${now.year}년') ==
+              false) {
+            badgeDropdownValuelist[title]!.add('${now.year}년');
+          }
+          if (hasBadge) {
+            badges = setDuringBadgeList(
+                badgeDropdownValuelist[title].toString(), badges);
+            hasBadge = badges.any((element) => badges != []);
+          }
+        }
 
         if (type == QuestType.event && hasBadge == false) {
           return SizedBox();
         }
-
-        String title = getBadgeSectionTitleByType(type);
 
         return Column(
             mainAxisSize: MainAxisSize.min,
@@ -100,9 +135,13 @@ class _MobileLayoutState_myBadgeCollections
                   buildText(title, TextType.h4),
                   if (isDropDownButton)
                     CustomDropdownMenu(
-                      menuItems: badgeDropdownValuelist,
-                      initialValue: '2024년',
+                      menuItems: badgeDropdownValuelist[title]!,
+                      initialValue: '${now.year}년',
                       isEnable: true,
+                      onItemSelected: (String selectedValue) {
+                        badgeDropdownValues[title] = selectedValue;
+                        provider.refreshBadges();
+                      },
                     ),
                 ],
               ),

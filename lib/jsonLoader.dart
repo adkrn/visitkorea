@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:visitkorea/model/testUserInfo.dart';
 import 'package:visitkorea/model/userInfo.dart';
-import 'package:visitkorea/model/userSession.dart';
 import 'package:visitkorea/model/userHistory.dart';
 import 'package:visitkorea/model/userRankingInfo.dart';
 import 'dart:convert';
@@ -11,10 +9,11 @@ import 'package:flutter/services.dart';
 import 'main.dart';
 import 'package:flutter/cupertino.dart';
 
-String domain = 'dev.ktovisitkorea.com';
+String domain = 'korean.visitkorea.or.kr';
 //'dev.ktovisitkorea.com'
-//'121.126.153.150:8080'
+//'121.126.153.150:8080'  로컬 개발계 서버 주소
 //'stage.visitkorea.or.kr'
+//'korean.visitkorea.or.kr'
 
 class QuestProvider with ChangeNotifier {
   List<Quest> _questList = [];
@@ -51,23 +50,23 @@ class QuestProvider with ChangeNotifier {
     // if (questType != 99) {
     //   queryParameters['questType'] = questType.toString();
     // }
-    switch (activationStartDateTimeStamp) {
-      case 2024:
-        queryParameters['activationStartDateTimeStamp'] = '1704067200';
-      case 2025:
-        queryParameters['activationStartDateTimeStamp'] = '1735689600000';
-      case 2026:
-        queryParameters['activationStartDateTimeStamp'] = '1767225600000';
-    }
+    // switch (activationStartDateTimeStamp) {
+    //   case 2024:
+    //     queryParameters['activationStartDateTimeStamp'] = '1704034800000';
+    //   case 2025:
+    //     queryParameters['activationStartDateTimeStamp'] = '1735689600000';
+    //   case 2026:
+    //     queryParameters['activationStartDateTimeStamp'] = '1767225600000';
+    // }
 
-    switch (activationEndDateTimeStamp) {
-      case 2025:
-        queryParameters['activationEndDateTimeStamp'] = '1735689600000';
-      case 2026:
-        queryParameters['activationEndDateTimeStamp'] = '1767225600000';
-      case 2999:
-        break;
-    }
+    // switch (activationEndDateTimeStamp) {
+    //   case 2025:
+    //     queryParameters['activationEndDateTimeStamp'] = '1735689600000';
+    //   case 2026:
+    //     queryParameters['activationEndDateTimeStamp'] = '1767225600000';
+    //   case 2999:
+    //     break;
+    // }
 
     queryParameters['timeStamp'] =
         DateTime.now().millisecondsSinceEpoch.toString();
@@ -79,7 +78,7 @@ class QuestProvider with ChangeNotifier {
       queryParameters,
     );
 
-    print('Quest Load Start');
+    //print('Quest Load Start');
     try {
       var response = await http.get(
         url,
@@ -113,9 +112,9 @@ class QuestProvider with ChangeNotifier {
         isLogin = true;
         print('Quest Load Success');
         _isLoading = false;
-        notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+        notifyListeners();
       } else {
-        print('Quest Load Fail Load Empty Quest');
+        print('Quest Load Fail isLogin false :: Load Empty Quest');
         loadEmptyQuest();
       }
     } catch (e) {
@@ -128,7 +127,7 @@ class QuestProvider with ChangeNotifier {
   Future<void> refreshQuests() async {
     _isLoading = false;
     await fetchQuest();
-    notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+    notifyListeners();
   }
 
   // 퀘스트 진행사항 업데이트
@@ -294,13 +293,18 @@ class QuestProvider with ChangeNotifier {
         barrierDismissible: false, // 사용자가 다이얼로그 바깥을 탭해도 닫히지 않도록 설정
         builder: (BuildContext context) {
           return CupertinoAlertDialog(
-            title: Text('과제 보상 수령 완료'),
-            content: Text('획득한 배지는 배지도감에서\n확인 가능합니다.\n앞으로도 다양한 도전과제에\n참여해보세요!'),
+            title: Text(
+              '과제 보상 수령 완료',
+              style: TextStyle(fontFamily: 'NotoSansKR'),
+            ),
+            content: Text('획득한 배지는 배지도감에서\n확인 가능합니다.\n앞으로도 다양한 도전과제에\n참여해보세요!',
+                style: TextStyle(fontFamily: 'NotoSansKR')),
             actions: <Widget>[
               TextButton(
                 child: Text(
                   '확인',
-                  style: TextStyle(color: Colors.blue),
+                  style:
+                      TextStyle(color: Colors.blue, fontFamily: 'NotoSansKR'),
                 ),
                 onPressed: () {
                   Navigator.of(context).pop(); // 알럿 닫기
@@ -568,13 +572,15 @@ Future<void> fetchSession() async {
 
   var url = Uri.http(domain, '/session-api/v1/sessions', queryParameters);
 
+  // 로컬에서 테스트 할때 SNSID 값을 직접 넣어서 테스트.
   userSession = UserSession(
       sessionId: '', snsId: ''); // 16aa6395-6bda-45d1-9111-395e45215249
-  print(userSession?.snsId);
   // f48926e6-af71-430b-98e5-4909e524e81d
   // b878e5c3-5e6f-43b9-a6dd-05d7571e0f77
   // ef753509-20c7-4f62-9cd1-db407f7a4ba7
   print('snsId Load Start');
+
+  // 사용자 계정 세션에서 snsID를 불러온다.
   try {
     var response = await http.get(
       url,
@@ -584,27 +590,9 @@ Future<void> fetchSession() async {
       print('snsId response Success');
       var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       print(jsonResponse['snsId']);
+      // 세션 ID도 필요하면 설정하려고 설정. 현재는 필요없어서 안쓰고있음.
       userSession = UserSession(sessionId: '', snsId: jsonResponse['snsId']!);
       print(userSession?.snsId);
-      print('sessionId Load Start');
-
-      var url = Uri.http('https://$domain');
-      final cookieResponse = await http.get(url);
-
-      String? setCookie = cookieResponse.headers['set-cookie'];
-      print('setCookie Check Start ::: $setCookie');
-
-      if (setCookie != null) {
-        print('setCookie != null');
-        final RegExp regExp = RegExp(r'JSESSIONID=([^;]+)');
-        final match = regExp.firstMatch(setCookie);
-        var sessionId = match?.group(1);
-
-        userSession =
-            UserSession(sessionId: sessionId!, snsId: jsonResponse['snsId']);
-        print('sessionId response Success');
-        print('Session ID: $sessionId');
-      }
     }
   } catch (e) {
     print('Failed to Load SessionInfo Error : $e');
@@ -679,13 +667,12 @@ class RankingProvider with ChangeNotifier {
         _userList = (jsonResponse['content'] as List)
             .map((data) => UserRankingInfo.fromJson(data))
             .toList();
-
         _userList.sort((a, b) => a.ranking.compareTo(b.ranking));
         for (int i = 0; i < _userList.length; i++) {
           _userList[i]
               .setMainBadgeName(await getMainBadgeName(userList[i].sns.snsId));
-          _userList[i]
-              .setProfileUrl(await getProfileUrl(userList[i].sns.snsId));
+          // _userList[i]
+          //     .setProfileUrl(await getProfileUrl(userList[i].sns.snsId));
         }
       }
     } catch (e) {
@@ -728,13 +715,15 @@ class RankingProvider with ChangeNotifier {
     }
   }
 
-  Future<String> getMainBadgeName(String snsId) async {
+  Future<Badge_completed?> getMainBadgeName(String snsId) async {
     Map<String, dynamic> queryParameters = {
       'timeStamp': DateTime.now().millisecondsSinceEpoch.toString()
     };
 
     var url =
         Uri.http(domain, '/quest-api/v1/badge-snses/main', queryParameters);
+
+    //print('$snsId : 메인배지정보 로드 시작');
 
     try {
       var response = await http.get(
@@ -750,13 +739,15 @@ class RankingProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
         Badge_completed badgeComplte = (Badge_completed.fromJson(jsonResponse));
-        return badgeComplte.badgeinfo.name;
+        return badgeComplte;
+      } else {
+        return null;
       }
     } catch (e) {
       //print('Failed to load MainBadge. Error: $e');
       //print('해당 유저는 메인 배지가 설정되어 있지 않습니다.');
+      return null;
     }
-    return '';
   }
 
   Future<String> getProfileUrl(String snsId) async {
@@ -1190,12 +1181,4 @@ class EventBannerProvider with ChangeNotifier {
       notifyListeners(); // 로딩 상태 업데이트
     }
   }
-}
-
-Future<List<TestUser>> fetchTestUserList() async {
-  String jsonString = await rootBundle.loadString('assets/testUserTable.json');
-  Map<String, dynamic> jsonResponse = jsonDecode(jsonString);
-  List<dynamic> content = jsonResponse['content'];
-
-  return content.map<TestUser>((json) => TestUser.fromJson(json)).toList();
 }

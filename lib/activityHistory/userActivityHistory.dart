@@ -3,119 +3,72 @@ import 'package:visitkorea/jsonLoader.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../common_widgets.dart';
-// class MyActivityHistory extends StatefulWidget {
-//   @override
-//   _MyActivityHistoryState createState() => _MyActivityHistoryState();
-// }
 
-// class _MyActivityHistoryState extends State<MyActivityHistory> {
-//   static const int _maxWidth = 1000;
-//   @override
-//   Widget build(BuildContext context) {          return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Badge Collections'),
-//       ),
-//       body: buildLayout(),
-//     );}
-// }
-
+// 나의 활동 내역 페이지
 class MyActivityHistory extends StatefulWidget {
   @override
   _MyActivityHistoryState createState() => _MyActivityHistoryState();
 }
 
 class _MyActivityHistoryState extends State<MyActivityHistory> {
-  bool isHoverd = false;
-  void onHoverdCallBack() {
-    setState(() {
-      isHoverd = true;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
+    print('build');
     bool isMobile = MediaQuery.of(context).size.width < 1000;
     return Scaffold(
-      appBar: CustomAppBar(
-          appBarHeight: isMobile ? 98 : 90, onHoverd: onHoverdCallBack),
+      appBar: CustomAppBar(appBarHeight: isMobile ? 98 : 90),
       body: Column(
         children: [
-          Expanded(child: UserHistoryTable()),
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: isMobile ? double.infinity : 940,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                      child: Row(
+                    children: [
+                      Image.asset('assets/Vector_step.png'),
+                      const SizedBox(width: 4),
+                      buildText('활동내역', isMobile ? TextType.h4 : TextType.h3),
+                    ],
+                  )),
+                  SizedBox(
+                    child: buildText(
+                        '회원코드:${Provider.of<UserInfoProvider>(context, listen: false).userInfo.indexId}',
+                        TextType.h6),
+                  )
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: isMobile ? double.infinity : 940,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CustomDropdownMenu(
+                    menuItems: ['월간', '연간'],
+                    initialValue: '월간',
+                    isEnable: true,
+                    onItemSelected: (String selectedValue) {
+                      Provider.of<UserHistoryProvider>(context, listen: false)
+                          .refreshData(selectedValue == '월간' ? 'M' : 'Y');
+                    },
+                  )
+                ],
+              ),
+            ),
+          ),
+          Expanded(child: buildTable(context, isMobile)),
         ],
       ),
-    );
-  }
-}
-
-class UserHistoryTable extends StatefulWidget {
-  @override
-  _UserHistoryTableState createState() => _UserHistoryTableState();
-}
-
-class _UserHistoryTableState extends State<UserHistoryTable> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<UserHistoryProvider>(context, listen: false).refreshData('M');
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    Provider.of<UserHistoryProvider>(context, listen: false).refreshData('M');
-    bool isMobile = MediaQuery.of(context).size.width < 1000;
-
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          child: SizedBox(
-            width: isMobile ? double.infinity : 940,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                    child: Row(
-                  children: [
-                    Image.asset('assets/Vector_step.png'),
-                    const SizedBox(width: 4),
-                    buildText('활동내역', isMobile ? TextType.h4 : TextType.h3),
-                  ],
-                )),
-                SizedBox(
-                  child: buildText(
-                      '회원코드:${Provider.of<UserInfoProvider>(context, listen: false).userInfo.indexId}',
-                      TextType.h6),
-                )
-              ],
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: SizedBox(
-            width: isMobile ? double.infinity : 940,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                CustomDropdownMenu(
-                  menuItems: ['월간', '연간'],
-                  initialValue: '월간',
-                  isEnable: true,
-                  onItemSelected: (String selectedValue) {
-                    Provider.of<UserHistoryProvider>(context, listen: false)
-                        .refreshData(selectedValue == '월간' ? 'M' : 'Y');
-                  },
-                )
-              ],
-            ),
-          ),
-        ),
-        Expanded(child: buildTable(context, isMobile)),
-      ],
     );
   }
 
@@ -177,7 +130,11 @@ class _UserHistoryTableState extends State<UserHistoryTable> {
               SizedBox(
                   width: isMobile ? 390 : 940,
                   height: 500,
-                  child: const Center(child: Text('활동 내역이 없습니다.'))),
+                  child: const Center(
+                      child: Text(
+                    '활동 내역이 없습니다.',
+                    style: TextStyle(fontFamily: 'NotoSansKR'),
+                  ))),
               buildNoticeSection_Mobile(),
             ] else
               // DataRow 스크롤 가능

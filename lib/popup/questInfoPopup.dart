@@ -150,9 +150,32 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
         break;
     }
 
-    if (widget.quest.questDetails.exposeStatus == ExposeStatus.testing) {
-      desc += ' 테스트중';
+    // 테스트 상태인 퀘스트 확인용
+    // if (widget.quest.questDetails.exposeStatus == ExposeStatus.testing) {
+    //   desc += ' 테스트중';
+    // }
+
+    return desc;
+  }
+
+  String getQuestMethodDesc() {
+    String desc = '';
+    switch (widget.quest.progressType) {
+      case ProgressType.unProgressed:
+        desc = widget.quest.questDetails.unknownBadge!.getMethodDescription;
+        break;
+      case ProgressType.progress:
+        desc = widget.quest.questDetails.disableBadge!.getMethodDescription;
+        break;
+      default:
+        desc = widget.quest.questDetails.enableBadge!.getMethodDescription;
+        break;
     }
+
+    // 테스트 상태인 퀘스트 확인용
+    // if (widget.quest.questDetails.exposeStatus == ExposeStatus.testing) {
+    //   desc += ' 테스트중';
+    // }
 
     return desc;
   }
@@ -277,17 +300,25 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
                     builder: (BuildContext context) {
                       // 확인/취소 버튼이 있는 AlertDialog 생성
                       return CupertinoAlertDialog(
-                        title: Text('대표 배지로 설정하시겠습니까?'),
+                        title: Text(
+                          '대표 배지로 설정하시겠습니까?',
+                          style: TextStyle(fontFamily: 'NotoSansKR'),
+                        ),
                         actions: <Widget>[
                           TextButton(
-                            child: Text('취소'),
+                            child: Text(
+                              '취소',
+                              style: TextStyle(fontFamily: 'NotoSansKR'),
+                            ),
                             onPressed: () {
                               Navigator.of(context).pop(); // 다이얼로그 닫기
                             },
                           ),
                           TextButton(
                             child: Text('확인',
-                                style: TextStyle(color: Colors.blue)),
+                                style: TextStyle(
+                                    color: Colors.blue,
+                                    fontFamily: 'NotoSansKR')),
                             onPressed: () {
                               // 대표 배지 설정 로직을 여기에 추가하세요.
                               Provider.of<BadgeProvider>(context, listen: false)
@@ -410,11 +441,17 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
       barrierDismissible: false, // 사용자가 다이얼로그 바깥을 탭해도 닫히지 않도록 설정
       builder: (BuildContext context) {
         return CupertinoAlertDialog(
-          title: Text('설정 완료'),
-          content: Text('대표 배지로 설정되었습니다.'),
+          title: Text(
+            '설정 완료',
+            style: TextStyle(fontFamily: 'NotoSansKR'),
+          ),
+          content: Text('대표 배지로 설정되었습니다.',
+              style: TextStyle(fontFamily: 'NotoSansKR')),
           actions: <Widget>[
             TextButton(
-              child: Text('확인', style: TextStyle(color: Colors.blue)),
+              child: Text('확인',
+                  style:
+                      TextStyle(color: Colors.blue, fontFamily: 'NotoSansKR')),
               onPressed: () {
                 Navigator.of(context).pop(); // 알럿 닫기
                 Navigator.of(context).pop(); // 팝업 닫기
@@ -460,6 +497,8 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
           }
         case ProgressType.receive:
           return '${baseUrl}enable/${quest.questDetails.enableBadge!.imgName}.png';
+        case ProgressType.expiration:
+          return '${baseUrl}disable/${quest.questDetails.disableBadge!.imgName}.png';
         default:
           throw Exception('잘못된 퀘스트 정보입니다.');
       }
@@ -513,7 +552,7 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
         children: [
           buildText(quest.questDetails.conditionName, TextType.h6),
           const SizedBox(width: 8),
-          if (progressType.index > 1)
+          if (progressType.index > 1 && progressType != ProgressType.expiration)
             buildText('도전 성공!', TextType.h6, textColor: const Color(0xFF7845E2))
           else
             quest.questDetails.conditionName != '대구석VIP 달성하기'
@@ -543,8 +582,7 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
 
   Widget buildGetMethodDescription(Quest quest) {
     // '획득방법'을 분리
-    var splitDescription =
-        quest.questDetails.enableBadge!.getMethodDescription.split('<br>');
+    var splitDescription = getQuestMethodDesc().split('<br>');
     String details = splitDescription.skip(0).join('\n'); // 나머지 설명
 
     return Container(

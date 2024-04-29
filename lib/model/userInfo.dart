@@ -9,6 +9,7 @@ class UserInfo {
   }
 }
 
+// 사용자 개인정보, 랭킹전 참여여부등
 class UserPrivacyInfo {
   final String snsQuestInfoId;
   final bool isEventAgree;
@@ -39,4 +40,14 @@ class UserPrivacyInfo {
       isBadgeTesterMode: json['isBadgeTesterMode'],
     );
   }
+}
+
+class UserSession {
+  final String sessionId;
+  final String snsId;
+
+  UserSession({
+    required this.sessionId,
+    required this.snsId,
+  });
 }

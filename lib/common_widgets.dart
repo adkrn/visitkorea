@@ -36,7 +36,10 @@ Widget buildTitleBannerImg(BuildContext context) {
 
   return Center(
     child: Stack(children: [
-      Image.asset('assets/BadgeBanner_Desktop.png', fit: BoxFit.contain),
+      SizedBox(
+          width: screenWidth,
+          child: Image.asset('assets/BadgeBanner_Desktop.png',
+              fit: BoxFit.fitWidth)),
       Positioned(
         top: topPosition,
         bottom: bottomPosition,
@@ -81,7 +84,10 @@ Widget buildTitleBannerImg_mobile(BuildContext context) {
 
   return Center(
     child: Stack(children: [
-      Image.asset('assets/BadgeBanner_Mobile.png', fit: BoxFit.contain),
+      SizedBox(
+          width: screenWidth,
+          child: Image.asset('assets/BadgeBanner_Mobile.png',
+              fit: BoxFit.fitWidth)),
       Positioned(
         top: topPosition,
         bottom: bottomPosition,
@@ -154,15 +160,9 @@ Widget buildNoticeSection_Mobile() {
             textColor: textColor, align: TextAlign.left),
         const SizedBox(height: 8),
         buildText(
-            '• 배지콕콕 랭킹전 참여 취소 후 동일한 정보로 재 참여 신청 시, 이전에 수행 및 획득했던 내역은 연동이 불가합니다.',
-            TextType.p14R,
-            textColor: textColor,
-            align: TextAlign.left),
-        const SizedBox(height: 8),
-        buildText(
             '• 배지콕콕 서비스는 로그인 SNS 계정에 따라 활동 데이터가 누적됩니다. 여러 계정을 사용하여 로그인하는 경우, 배지 및 랭킹점수는 각 계정별로 누적되며, 서로 연동되지 않습니다.',
             TextType.p14R,
-            textColor: textColor,
+            textColor: const Color(0xFF7D7D7D),
             align: TextAlign.left),
         const SizedBox(height: 8),
         buildText('• 배지콕콕 메인 페이지의 닉네임 하단에 있는 랭킹점수를 클릭하면, 활동내역을 확인할 수 있습니다. ',
@@ -209,12 +209,6 @@ Widget buildNoticeSection_Desktop() {
             buildText(
                 '• 랭킹전 및 경품 이벤트는 개인정보 수집 및 이용 동의자만 참여 가능합니다.', TextType.p14R,
                 textColor: const Color(0xFF7D7D7D), align: TextAlign.left),
-            const SizedBox(height: 8),
-            buildText(
-                '• 배지콕콕 랭킹전 참여 취소 후 동일한 정보로 재 참여 신청 시, 이전에 수행 및 획득했던 내역은 연동이 불가합니다.',
-                TextType.p14R,
-                textColor: const Color(0xFF7D7D7D),
-                align: TextAlign.left),
             const SizedBox(height: 8),
             buildText(
                 '• 배지콕콕 서비스는 로그인 SNS 계정에 따라 활동 데이터가 누적됩니다. 여러 계정을 사용하여 로그인하는 경우, 배지 및 랭킹점수는 각 계정별로 누적되며, 서로 연동되지 않습니다.',
@@ -683,7 +677,8 @@ class _CustomDropdownMenu extends State<CustomDropdownMenu> {
                 value: value,
                 child: Text(
                   value,
-                  style: TextStyle(fontSize: 16, fontFamily: 'NotoSansKR'),
+                  style:
+                      const TextStyle(fontSize: 16, fontFamily: 'NotoSansKR'),
                 ),
                 onTap: () {},
               ))
@@ -701,14 +696,13 @@ class _CustomDropdownMenu extends State<CustomDropdownMenu> {
   }
 }
 
+// GNB 클래스
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   double appBarHeight; // AppBar의 높이를 동적으로 설정할 수 있는 매개변수 추가
-  final VoidCallback? onHoverd;
 
   CustomAppBar({
     Key? key,
     this.appBarHeight = kToolbarHeight, // 기본값으로 kToolbarHeight 사용
-    this.onHoverd,
   });
 
   @override
@@ -833,6 +827,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                       width: 130,
                       child: Image.asset(
                         'assets/logo_Mobile.png',
+                        fit: BoxFit.fitWidth,
                       ),
                     ),
                   ),
@@ -886,7 +881,8 @@ class _CustomAppBarState extends State<CustomAppBar> {
                   CustomTextButton(
                     btnText: '여행상품 홍보관',
                     textType: TextType.p14M,
-                    btnPadding: mobilePadding,
+                    btnPadding: const EdgeInsets.only(
+                        top: 14, bottom: 14, right: 24, left: 18),
                     onPressed: () {
                       redirectToUrl(tgprUrl);
                     },
@@ -902,7 +898,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                       child: CustomTextButton(
                         btnText: '여행정보',
                         textType: TextType.p14B,
-                        btnPadding: const EdgeInsets.all(0),
+                        btnPadding: const EdgeInsets.only(right: 18, left: 18),
                         onPressed: () {
                           redirectToUrl(travInfoUrl);
                         },
@@ -922,114 +918,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
             ),
           ),
         ),
-        // lnb 영역
-        // Container(
-        //   width: double.infinity,
-        //   height: 50,
-        //   padding: isTablat
-        //       ? const EdgeInsets.symmetric(horizontal: 15)
-        //       : const EdgeInsets.all(0),
-        //   decoration: const BoxDecoration(color: Color(0xFFF4F6F8)),
-        //   child: SingleChildScrollView(
-        //     scrollDirection: Axis.horizontal,
-        //     reverse: isTablat ? false : true,
-        //     child: Row(
-        //       mainAxisAlignment: MainAxisAlignment.start,
-        //       crossAxisAlignment: CrossAxisAlignment.center,
-        //       children: [
-        //         CustomTextButton(
-        //           btnText: '여행지',
-        //           textType: TextType.p12M,
-        //           btnPadding: lnbPadding,
-        //           onPressed: () {
-        //             redirectToUrl(travelinfoDo);
-        //           },
-        //         ),
-        //         CustomTextButton(
-        //           btnText: '여행기사',
-        //           textType: TextType.p12M,
-        //           btnPadding: lnbPadding,
-        //           onPressed: () {
-        //             redirectToUrl(travelinforem);
-        //           },
-        //         ),
-        //         CustomTextButton(
-        //           btnText: '여행코스',
-        //           textType: TextType.p12M,
-        //           btnPadding: lnbPadding,
-        //           onPressed: () {
-        //             redirectToUrl(travelinfoCS);
-        //           },
-        //         ),
-        //         CustomTextButton(
-        //           btnText: '축제',
-        //           textType: TextType.p12M,
-        //           btnPadding: lnbPadding,
-        //           onPressed: () {
-        //             redirectToUrl(traveWntyFstvlList);
-        //           },
-        //         ),
-        //         CustomTextButton(
-        //           btnText: '공연/행사',
-        //           textType: TextType.p12M,
-        //           btnPadding: lnbPadding,
-        //           onPressed: () {
-        //             redirectToUrl(travelInfoShow);
-        //           },
-        //         ),
-        //         CustomTextButton(
-        //           btnText: '이벤트',
-        //           textType: TextType.p12M,
-        //           btnPadding: lnbPadding,
-        //           onPressed: () {
-        //             redirectToUrl(travelInfoEvent);
-        //           },
-        //         ),
-        //         CustomTextButton(
-        //           btnText: '가볼래-터',
-        //           textType: TextType.p12M,
-        //           btnPadding: lnbPadding,
-        //           onPressed: () {
-        //             redirectToUrl(travelInfoTrss);
-        //           },
-        //         ),
-        //         CustomTextButton(
-        //           btnText: '디지털관광주민증',
-        //           textType: TextType.p12M,
-        //           btnPadding: lnbPadding,
-        //           onPressed: () {
-        //             redirectToUrl(travelInfoDigt);
-        //           },
-        //         ),
-        //         Padding(
-        //           padding: const EdgeInsets.only(
-        //               left: 0, top: 12, bottom: 12, right: 10),
-        //           child: Container(
-        //             padding:
-        //                 const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        //             decoration: ShapeDecoration(
-        //               color: Colors.black,
-        //               shape: RoundedRectangleBorder(
-        //                 borderRadius: BorderRadius.circular(20),
-        //               ),
-        //             ),
-        //             child: Row(
-        //               children: [
-        //                 Image.asset('assets/badgeIcon.png'),
-        //                 CustomTextButton(
-        //                   btnText: '배지콕콕',
-        //                   textType: TextType.p12M,
-        //                   btnPadding: const EdgeInsets.all(0),
-        //                   txtColor: Colors.white,
-        //                 ),
-        //               ],
-        //             ),
-        //           ),
-        //         ),
-        //       ],
-        //     ),
-        //   ),
-        // )
       ],
     );
   }
@@ -1291,239 +1179,9 @@ class _CustomTextButtonState extends State<CustomTextButton> {
   }
 }
 
-class CustomLnb extends StatefulWidget {
-  CustomLnb();
-
-  @override
-  _CustomLnbState createState() => _CustomLnbState();
-}
-
-class _CustomLnbState extends State<CustomLnb> {
-  /// lnb AI 콕콕 url
-  final String ai = 'https://$domain/main/cr_main.do?type=ai';
-
-  /// lnb 핫플 콕콕 url
-  final String place = 'https://$domain/main/cr_main.do?type=place';
-
-  /// lnb AI 콕콕 플래너 url
-  final String best =
-      'https://$domain/main/cr_main.do?type=abc&detailType=best';
-
-  /// lnb 여행지 url
-  final String travelinfoDo = 'https://$domain/list/travelinfo.do?service=ms';
-
-  /// lnb 여행기사 url
-  final String travelinforem = 'https://$domain/list/travelinfo.do?service=rem';
-
-  /// lnb 여행코스 url
-  final String travelinfoCS = 'https://$domain/list/travelinfo.do?service=cs';
-
-  /// lnb 축제 url
-  final String traveWntyFstvlList =
-      'https://$domain/kfes/list/wntyFstvlList.do';
-
-  /// lnb 공연/행사 url
-  final String travelInfoShow =
-      'https://$domain/list/travelinfo.do?service=show';
-
-  /// lnb 이벤트 url
-  final String travelInfoEvent =
-      'https://$domain/list/travelinfo.do?service=event';
-
-  /// lnb 가볼래터 url
-  final String travelInfoTrss =
-      'https://$domain/list/travelinfo.do?service=trss';
-
-  /// lnb 디지털관광주민증 url
-  final String travelInfoDigt =
-      'https://$domain/list/travelinfo.do?service=digt';
-  @override
-  Widget build(BuildContext context) {
-    double screenSize = MediaQuery.of(context).size.width;
-    double leftPadding = screenSize * (222 / widthSize);
-    return Container(
-      //width: double.infinity,
-      height: 276,
-      padding: const EdgeInsets.only(top: 8, bottom: 16),
-      clipBehavior: Clip.antiAlias,
-      decoration: const BoxDecoration(color: Color(0xFFF3F4F7)),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(width: 64),
-          SizedBox(
-            width: leftPadding,
-          ),
-          const SizedBox(width: 207),
-          SizedBox(
-            width: 850,
-            child: Row(
-              children: [
-                const SizedBox(
-                  width: 270,
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      height: 28,
-                      child: CustomLnbTextButton(
-                        btnText: 'AI콕콕',
-                        onPressed: () {
-                          redirectToUrl(travelinfoDo);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 28,
-                      child: CustomLnbTextButton(
-                        btnText: '핫플콕콕',
-                        onPressed: () {
-                          redirectToUrl(travelinfoDo);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 28,
-                      child: CustomLnbTextButton(
-                        btnText: 'AI콕콕 플래너',
-                        onPressed: () {
-                          redirectToUrl(travelinfoDo);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 199),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      height: 28,
-                      child: CustomLnbTextButton(
-                        btnText: '여행지',
-                        onPressed: () {
-                          redirectToUrl(travelinfoDo);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 28,
-                      child: CustomLnbTextButton(
-                        btnText: '여행기사',
-                        onPressed: () {
-                          redirectToUrl(travelinforem);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 28,
-                      child: CustomLnbTextButton(
-                        btnText: '여행코스',
-                        onPressed: () {
-                          redirectToUrl(travelinfoCS);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 28,
-                      child: CustomLnbTextButton(
-                        btnText: '축제',
-                        onPressed: () {
-                          redirectToUrl(traveWntyFstvlList);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 28,
-                      child: CustomLnbTextButton(
-                        btnText: '공연/행사',
-                        onPressed: () {
-                          redirectToUrl(travelInfoShow);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 28,
-                      child: CustomLnbTextButton(
-                        btnText: '이벤트',
-                        onPressed: () {
-                          redirectToUrl(travelInfoEvent);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 28,
-                      child: CustomLnbTextButton(
-                        btnText: '가볼래-터',
-                        onPressed: () {
-                          redirectToUrl(travelInfoTrss);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 28,
-                      child: CustomLnbTextButton(
-                        btnText: '디지털관광주민증',
-                        onPressed: () {
-                          redirectToUrl(travelInfoDigt);
-                        },
-                      ),
-                    ),
-                    Container(
-                      height: 28,
-                      padding: const EdgeInsets.only(left: 12),
-                      child: buildText('배지콕콕', TextType.p16BLine),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class CustomLnbTextButton extends StatefulWidget {
-  final String btnText;
-  final VoidCallback? onPressed;
-
-  CustomLnbTextButton({super.key, required this.btnText, this.onPressed});
-
-  @override
-  _CustomLnbTextButtonState createState() => _CustomLnbTextButtonState();
-}
-
-class _CustomLnbTextButtonState extends State<CustomLnbTextButton> {
-  bool _isHovered = false;
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-        style: ButtonStyle(
-          splashFactory: NoSplash.splashFactory,
-          overlayColor: MaterialStateProperty.all(Colors.transparent),
-          shadowColor: MaterialStateProperty.all(Colors.transparent),
-        ),
-        onPressed: widget.onPressed,
-        onHover: (value) {
-          setState(() {
-            _isHovered = value;
-          });
-        },
-        child: _isHovered
-            ? buildText(widget.btnText, TextType.p16BLine)
-            : buildText(widget.btnText, TextType.p16M,
-                textColor: const Color(0xFF5B5B5B)));
-  }
-}
-
 Widget buildPrivacyCancelCard(bool isMobile, BuildContext context) {
   return Container(
     width: double.infinity,
-    height: isMobile ? 104 : 117,
     padding: EdgeInsets.all(isMobile ? 8 : 16),
     clipBehavior: Clip.antiAlias,
     decoration: ShapeDecoration(
@@ -1539,15 +1197,8 @@ Widget buildPrivacyCancelCard(bool isMobile, BuildContext context) {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         buildText(
-          '개인정보 수집 이용 동의 취소 시,',
-          TextType.p14R,
-          textColor: Colors.black,
-        ),
-        buildText(
-          '배지콕콕 랭킹전 및 경품 이벤트 참여가 제한됩니다.',
-          TextType.p14R,
-          textColor: Colors.black,
-        ),
+            '개인정보 수집 이용 동의 취소 시, 배지콕콕 랭킹전 및 경품 이벤트 참여가 제한됩니다.', TextType.p14R,
+            textColor: Colors.black, align: TextAlign.left),
         const SizedBox(height: 12),
         ElevatedButton(
             onPressed: () {

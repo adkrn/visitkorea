@@ -1,7 +1,5 @@
-import 'dart:html';
-import 'dart:typed_data';
-import 'dart:ui';
-import 'package:image/image.dart' as img;
+// 사용자 랭킹전 관련 정보
+import 'package:visitkorea/model/quest.dart';
 
 class UserRankingInfo {
   final String rankBoardId;
@@ -9,8 +7,8 @@ class UserRankingInfo {
   final RankSNS sns;
   final int ranking;
   final int point;
-  String? mainBadgeName;
-  String? profileUrl;
+  Badge_completed? mainBadgeName;
+  //String? profileUrl;
 
   UserRankingInfo({
     required this.rankBoardId,
@@ -19,7 +17,7 @@ class UserRankingInfo {
     required this.ranking,
     required this.point,
     this.mainBadgeName,
-    this.profileUrl,
+    //this.profileUrl,
   });
 
   factory UserRankingInfo.fromJson(Map<String, dynamic> json) {
@@ -31,12 +29,12 @@ class UserRankingInfo {
         point: json['point']);
   }
 
-  void setMainBadgeName(String name) {
-    mainBadgeName = name;
+  void setMainBadgeName(Badge_completed? badge_completed) {
+    mainBadgeName = badge_completed;
   }
 
   void setProfileUrl(String url) {
-    profileUrl = url;
+    //profileUrl = url;
   }
 }
 
@@ -50,15 +48,17 @@ class RankSNS {
   });
 
   factory RankSNS.fromJson(Map<String, dynamic> json) {
-    return RankSNS(snsId: json['snsId'], name: json['name']);
+    return RankSNS(snsId: json['snsId'], name: json['name'] ?? '닉네임을 등록해주세요');
   }
 }
 
+// 사용자가 속해있는 랭킹 그룹의 정보
+// 랭킹확정일, 팝업 노출 여부 등.
 class RankGroups {
   final String rankGroupId;
   final String startDate;
   final String endDate;
-  final String confirmDate;
+  final DateTime confirmDate;
   final String intervalType;
   final bool popupYn;
   final DateTime createDate;
@@ -77,7 +77,7 @@ class RankGroups {
       rankGroupId: json['rankGroupId'],
       startDate: json['startDate'],
       endDate: json['endDate'],
-      confirmDate: json['confirmDate'],
+      confirmDate: DateTime.parse(json['confirmDate']),
       intervalType: json['intervalType'],
       popupYn: json['popupYn'] == 'Y' ? true : false,
       createDate: DateTime.parse(json['createDate']),

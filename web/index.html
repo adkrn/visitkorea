@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -14,6 +15,29 @@
     This is a placeholder for base href that will be replaced by the value of
     the `--base-href` argument provided to `flutter build`.
   -->
+  <!-- Google Tag Manager -->
+  <script>(function (w, d, s, l, i) {
+      w[l] = w[l] || []; w[l].push({
+        'gtm.start':
+          new Date().getTime(), event: 'gtm.js'
+      }); var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+          'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-PJVBVKB');</script>
+  <!-- End Google Tag Manager -->
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PJVBVKB" height="0" width="0"
+      style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LYY1LJZCC4"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-LYY1LJZCC4');
+  </script>
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
@@ -27,7 +51,7 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <title>visitkorea</title>
   <link rel="manifest" href="manifest.json">
@@ -39,44 +63,112 @@
   <!-- This script adds the flutter initialization JS code -->
   <script src="flutter.js" defer></script>
   <script>
-    function getUserAgent() {
-        return navigator.userAgent;
-    }
-  </script>
-  
-  <script>
-    function downloadImageIos(downloadUrl) {
-      const downloadLink = document.createElement("a");
-  downloadLink.href = "app://savePhoto?src="+downloadUrl;
-  downloadLink.download = 'image.png';
-  downloadLink.click();
-    }
-  </script>
 
-<script>
-  function downloadImageAndroid(downloadUrl) {
-    location.href = "opentab://"+downloadUrl;
-    console.log(downloadUrl);
-  }
-</script>
+
+    function getUserAgent() {
+      return navigator.userAgent;
+    }
+
+    function downloadImageIos(blob) {
+      console.log("IOS Image Download url in jsFunc: ");
+      Appdownload(blob, 'I');
+    }
+
+    function downloadImageAndroid(blob) {
+      console.log("Android Image Download url in jsFunc: ");
+      Appdownload(blob, 'A');
+    }
+
+    // 앱다운로드시 이미지 서버에 업로드 로직
+    function Appdownload(blob, device) {
+      let data = new FormData();
+      let uuid = uuidv4();
+      data.append("files", blob, uuid + '.png');
+
+      let mainUploadUrl = 'https://support.visitkorea.or.kr/img/call';
+
+      if (location.hostname === "dev.ktovisitkorea.com") {
+        mainUploadUrl = 'https://dev.ktovisitkorea.com/img/call';
+      }
+
+
+      fetch(mainUploadUrl + "?isUserUpload=true&inflow=badge", {
+        method: "POST",
+        header: {},
+        body: data
+      }).then(response => response.json()).then(data => {
+        filesave(data, device);
+      }).catch((error) => {
+        alert(error);
+      })
+    }
+
+    // 이미지 서버에 업로드 후 이미지 저장 로직
+    function filesave(obj, device) {
+      let filesavename = obj.body.result[0].saveName;
+
+      let downloadurl = 'https://cdn.visitkorea.or.kr/img/call?cmd=TEMP_VIEW&name=';
+      let mainUploadUrl = 'https://support.visitkorea.or.kr/img/call';
+
+      if (location.hostname === "dev.ktovisitkorea.com") {
+        downloadurl = 'https://dev.ktovisitkorea.com/img/call?cmd=TEMP_VIEW&name=';
+        mainUploadUrl = 'https://dev.ktovisitkorea.com/img/call';
+      }
+
+      let fileName = 'captured_image';
+
+      setTimeout(function () {
+        fetch(mainUploadUrl + "?cmd=TEMP_RM&inflow=badge&fn=" + obj.body.result[0].saveName, {
+          method: "GET",
+          header: {},
+          body: obj
+        }).then(response => response.json()).then(data => {
+        }).catch((error) => {
+        })
+      }, 5000);
+
+      let date = new Date();
+      let today = date.getFullYear() + '';
+      today += ((date.getMonth() + 1) > 9 ? (date.getMonth() + 1) : "0" + (date.getMonth() + 1))
+      today += (date.getDate() > 9 ? date.getDate() : "0" + date.getDate())
+
+      if (device == 'I') {
+        const downloadLink = document.createElement("a");
+        downloadLink.href = "app://savePhoto?src=" + downloadurl + filesavename + "&inflow=badge&updt=" + today;
+        downloadLink.download = `captured_image.png`;
+        downloadLink.click();
+      } else {
+        location.href = "opentab://" + downloadurl + filesavename + "&filename=" + fileName + "&inflow=badge&updt=" + today;
+      }
+    }
+
+    // 이미지 서버 내 파일저장시 파일명 랜덤코드 부여
+    function uuidv4() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+  </script>
 </head>
+
 <body>
   <script>
-    window.addEventListener('load', function(ev) {
+    window.addEventListener('load', function (ev) {
       // Download main.dart.js
       _flutter.loader.loadEntrypoint({
         serviceWorker: {
           serviceWorkerVersion: serviceWorkerVersion,
         },
-          onEntrypointLoaded: function(engineInitializer) {
+        onEntrypointLoaded: function (engineInitializer) {
 
-          engineInitializer.initializeEngine().then(function(appRunner) {
+          engineInitializer.initializeEngine().then(function (appRunner) {
             appRunner.runApp();
           });
         }
       });
     });
   </script>
-  <script src="main.dart.js" type="application/javascript"></script>
 </body>
+
 </html>

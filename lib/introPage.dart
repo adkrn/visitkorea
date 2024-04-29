@@ -7,13 +7,6 @@ class IntroPage extends StatefulWidget {
 }
 
 class _IntroPageState extends State<IntroPage> {
-  bool isHoverd = false;
-  void onHoverdCallBack() {
-    setState(() {
-      isHoverd = true;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -44,52 +37,35 @@ class _IntroPageState extends State<IntroPage> {
     if (rightPosition > maxHorizPos) rightPosition = maxHorizPos;
 
     return Scaffold(
-        appBar: CustomAppBar(
-            appBarHeight: isMobile ? 98 : 90, onHoverd: onHoverdCallBack),
-        body: Stack(
-          children: [
-            Center(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Stack(children: [
-                  SizedBox(
-                    width: screenWidth,
-                    child: Image.asset(
-                      isMobile
-                          ? 'assets/introPage_Mobile.png'
-                          : 'assets/introPage_PC.png',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Positioned(
-                      bottom: bottomPosition,
-                      left: leftPosition,
-                      right: rightPosition,
-                      child: InkWell(
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                          child: SizedBox(
-                            width: containerWidth,
-                            height: containerHeight,
-                          )))
-                ]),
+      appBar: CustomAppBar(appBarHeight: isMobile ? 98 : 90),
+      body: Center(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Stack(children: [
+            SizedBox(
+              width: screenWidth,
+              child: Image.asset(
+                isMobile
+                    ? 'assets/introPage_Mobile.png'
+                    : 'assets/introPage_PC.png',
+                fit: BoxFit.cover,
               ),
             ),
-            if (isHoverd) ...[
-              MouseRegion(
-                onEnter: (event) {
-                  setState(() {
-                    isHoverd = false;
-                  });
-                },
-                child: Container(
-                  color: Colors.black.withOpacity(0.5),
-                ),
-              ),
-              CustomLnb(),
-            ]
-          ],
-        ));
+            Positioned(
+                bottom: bottomPosition,
+                left: leftPosition,
+                right: rightPosition,
+                child: InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: SizedBox(
+                      width: containerWidth,
+                      height: containerHeight,
+                    )))
+          ]),
+        ),
+      ),
+    );
   }
 }

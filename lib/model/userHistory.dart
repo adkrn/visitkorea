@@ -1,3 +1,4 @@
+// 사용자 활동내역 모델
 class UserHistory {
   final String snsId;
   final String questName;

@@ -80,10 +80,6 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                             context: context,
                             builder: (BuildContext context) {
                               return CupertinoAlertDialog(
-                                title: const Text(
-                                  '랭킹전',
-                                  style: TextStyle(fontFamily: 'NotoSansKR'),
-                                ),
                                 content: const SingleChildScrollView(
                                   // 내용이 길어질 수 있으므로 SingleChildScrollView 사용
                                   child: ListBody(
@@ -164,7 +160,7 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
           return SizedBox();
         }
         List<UserRankingInfo> userList = rankingProvider.userList;
-        if (userList.isEmpty) {
+        if (userList.isEmpty || userList.length <= num) {
           //print('userList 없음');
           return SizedBox();
         }
@@ -173,7 +169,7 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
           clipBehavior: Clip.none,
           children: [
             Container(
-              //width: 114,
+              width: 110,
               //height: isNotTop ? 158 : 171,
               padding: const EdgeInsets.only(
                   top: 24, right: 16, left: 16, bottom: 16),
@@ -189,22 +185,11 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                    width: isNotTop ? 60 : 80,
-                    height: isNotTop ? 60 : 80,
-                    padding: const EdgeInsets.all(16),
-                    clipBehavior: Clip.antiAlias,
-                    decoration: ShapeDecoration(
-                      color: const Color(0xFFF6F6F6),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(42),
-                      ),
-                    ),
-                    child: SizedBox(
-                      //width: (isNotTop ? 32 : 40),
-                      //height: (isNotTop ? 32 : 40),
-                      child: Image.network(
-                        userList[num].profileUrl!,
+                  if (userList[num].mainBadgeName != null) ...[
+                    SizedBox(
+                      width: isNotTop ? 64 : 80,
+                      child: Image.asset(
+                        'assets/enable/${userList[num].mainBadgeName!.badgeinfo.imgName}_160.png',
                         fit: BoxFit.fitWidth,
                         errorBuilder: (context, error, stackTrace) {
                           return Image.asset('assets/userIcon.png',
@@ -212,7 +197,28 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                         },
                       ),
                     ),
-                  ),
+                  ] else ...[
+                    Container(
+                      width: isNotTop ? 60 : 80,
+                      height: isNotTop ? 60 : 80,
+                      padding: const EdgeInsets.all(12),
+                      clipBehavior: Clip.antiAlias,
+                      decoration: ShapeDecoration(
+                        color: const Color(0xFFF6F6F6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(42),
+                        ),
+                      ),
+                      child: SizedBox(
+                        //width: (isNotTop ? 32 : 40),
+                        //height: (isNotTop ? 32 : 40),
+                        child: Image.asset(
+                          'assets/userIcon.png',
+                          fit: BoxFit.fitWidth,
+                        ),
+                      ),
+                    ),
+                  ],
                   if (!isNotTop) const SizedBox(height: 2),
                   buildText(userList[num].sns.name, TextType.p14M,
                       isEllipsis: true),
@@ -305,9 +311,8 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                 );
               }
 
-              DateTime dateTime = DateTime.parse(value.groupsInfo.confirmDate);
-              String formattedString =
-                  DateFormat("yyyy년 MM월 dd일 HH시mm분").format(dateTime);
+              String formattedString = DateFormat("yyyy년 MM월 dd일 HH시mm분")
+                  .format(value.groupsInfo.confirmDate);
               return buildText(
                 '현재 랭킹 : $formattedString 기준 ',
                 TextType.p12R,
@@ -393,29 +398,40 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        padding: const EdgeInsets.all(12),
-                        clipBehavior: Clip.antiAlias,
-                        decoration: ShapeDecoration(
-                          color: const Color(0xFFE2E2E2),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(42),
+                      if (userRankingInfo.mainBadgeName != null) ...[
+                        SizedBox(
+                          width: 48,
+                          child: Image.asset(
+                            'assets/enable/${userRankingInfo.mainBadgeName!.badgeinfo.imgName}_160.png',
+                            fit: BoxFit.fitWidth,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
+                                'assets/userIcon.png',
+                                fit: BoxFit.contain,
+                                color: Color(0xffC3C3C3),
+                              );
+                            },
+                          ),
+                        )
+                      ] else ...[
+                        Container(
+                          width: 50,
+                          height: 50,
+                          padding: const EdgeInsets.all(12),
+                          clipBehavior: Clip.antiAlias,
+                          decoration: ShapeDecoration(
+                            color: const Color(0xFFE2E2E2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(42),
+                            ),
+                          ),
+                          child: Image.asset(
+                            'assets/userIcon.png',
+                            fit: BoxFit.contain,
+                            color: Color(0xffC3C3C3),
                           ),
                         ),
-                        child: Image.network(
-                          userRankingInfo.profileUrl!,
-                          fit: BoxFit.fitWidth,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Image.asset(
-                              'assets/userIcon.png',
-                              fit: BoxFit.fitWidth,
-                              color: Color(0xffC3C3C3),
-                            );
-                          },
-                        ),
-                      ),
+                      ],
                       const SizedBox(width: 24),
                       SizedBox(
                         height: 48,
@@ -448,7 +464,7 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                   ),
                 ],
               ),
-              if (userRankingInfo.mainBadgeName != '')
+              if (userRankingInfo.mainBadgeName != null)
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -463,7 +479,7 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       buildText(
-                        userRankingInfo.mainBadgeName!,
+                        userRankingInfo.mainBadgeName!.badgeinfo.name,
                         TextType.p12R,
                         textColor: Colors.white,
                       ),
