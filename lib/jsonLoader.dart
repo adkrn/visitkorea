@@ -9,7 +9,7 @@ import 'package:flutter/services.dart';
 import 'main.dart';
 import 'package:flutter/cupertino.dart';
 
-String domain = 'korean.visitkorea.or.kr';
+String domain = 'dev.ktovisitkorea.com';
 //'dev.ktovisitkorea.com'
 //'121.126.153.150:8080'  로컬 개발계 서버 주소
 //'stage.visitkorea.or.kr'
@@ -803,17 +803,15 @@ class UserHistoryProvider with ChangeNotifier {
         ? DateTime(now.year, now.month, 1)
         : DateTime(now.year, 1, 1);
     DateTime lastDay = intervalType == 'M'
-        ? DateTime(now.year, now.month + 1, 1).subtract(Duration(days: 1))
-        : DateTime(now.year + 1, 1, 1).subtract(Duration(days: 1));
+        ? DateTime(now.year, now.month + 1, 0)
+        : DateTime(now.year + 1, 1, 0);
 
-    // 조건에 맞는 항목만 필터링하여 새 리스트를 생성
     var filteredHistoryList = _historyList.where((history) {
-      // createTime이 startTime과 lastDay 사이인지 확인
-      return history.createDateTimeStamp.isAfter(startTime) &&
-          history.createDateTimeStamp.isBefore(lastDay);
+      return history.createDateTimeStamp
+              .isAfter(startTime.subtract(Duration(days: 1))) &&
+          history.createDateTimeStamp.isBefore(lastDay.add(Duration(days: 1)));
     }).toList();
 
-    // _historyList를 필터링된 리스트로 업데이트
     _historyList = filteredHistoryList;
   }
 

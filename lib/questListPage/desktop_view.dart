@@ -146,9 +146,6 @@ class _DesktopLayoutState_questList extends State<DesktopLayout_questList> {
             if (quest.progressType.index > 1) {
               isVIP = true;
             }
-            if (quest.questDetails.exposeStatus.index < 2) {
-              isVIPTest = true;
-            }
           }
 
           // ExposeStatus 값에 따라 배지 리스트에서 배지 삭제
@@ -196,17 +193,9 @@ class _DesktopLayoutState_questList extends State<DesktopLayout_questList> {
           }
         }
 
-        // vip 3개중에 하나라도 오픈중이 아니면 전부 비노출
-        if (isVIPTest == true) {
-          for (var vip in vipBadges) {
-            quests.removeWhere((quest) => quest == vip);
-          }
-        }
-
         // 테스터 모드가 아닌 사용자는 테스트 상태인 퀘스트 삭제.
         if (questProvider.isLogin) {
-          if (!userPrivacyInfoProvider.userPrivacyInfo.isBadgeTesterMode &&
-              questProvider.isLogin) {
+          if (!userPrivacyInfoProvider.userPrivacyInfo.isBadgeTesterMode) {
             quests.removeWhere((quest) =>
                 quest.questDetails.exposeStatus == ExposeStatus.testing);
           }

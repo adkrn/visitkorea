@@ -165,7 +165,7 @@ class _MobileLayoutState_questList extends State<MobileLayout_questList> {
         String title = getQuestSectionTitleByType(type);
 
         bool isVIP = false;
-        bool isVIPTest = false;
+
         for (var quest in quests) {
           // VIP 배지를 보유중인지 체크
           // 배지수령중인 상태를 체크하려면 isCompleted가 false인 상태에서 완료됐는지 체크가 되야하는데
@@ -173,9 +173,6 @@ class _MobileLayoutState_questList extends State<MobileLayout_questList> {
           if (quest.questDetails.conditionName == '대구석VIP 달성하기') {
             if (quest.progressType.index > 1) {
               isVIP = true;
-            }
-            if (quest.questDetails.exposeStatus.index < 2) {
-              isVIPTest = true;
             }
           }
 
@@ -222,13 +219,6 @@ class _MobileLayoutState_questList extends State<MobileLayout_questList> {
             if (vip.progressType.index < 2) {
               quests.remove(quests.where((quest) => quest == vip).single);
             }
-          }
-        }
-
-        // vip 3개중에 하나라도 오픈중이 아니면 전부 비노출
-        if (isVIPTest == true) {
-          for (var vip in vipBadges) {
-            quests.removeWhere((quest) => quest == vip);
           }
         }
 

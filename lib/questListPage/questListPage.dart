@@ -696,6 +696,8 @@ class _MainBannerState extends State<MainBanner> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => RankingListPage(),
+                  settings:
+                      RouteSettings(name: "/questListPage/rankingListPage"),
                 ));
           }
         } else {
@@ -930,7 +932,10 @@ class _MainBannerState extends State<MainBanner> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MyBadgeCollections()),
+                  MaterialPageRoute(
+                      builder: (context) => MyBadgeCollections(),
+                      settings: RouteSettings(
+                          name: "/questListPage/myBadgeCollections")),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -976,7 +981,10 @@ class _MainBannerState extends State<MainBanner> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MyBadgeCollections()),
+                  MaterialPageRoute(
+                      builder: (context) => MyBadgeCollections(),
+                      settings: RouteSettings(
+                          name: "/questListPage/myBadgeCollections")),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -1039,7 +1047,10 @@ class _MainBannerState extends State<MainBanner> {
             await Provider.of<UserHistoryProvider>(context, listen: false)
                 .refreshData('M');
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => MyActivityHistory()),
+              MaterialPageRoute(
+                  builder: (context) => MyActivityHistory(),
+                  settings:
+                      RouteSettings(name: "/questListPage/myActivityHistory")),
             );
           },
           child: Row(
@@ -1066,7 +1077,10 @@ class _MainBannerState extends State<MainBanner> {
           ),
           onPressed: () {
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => MyActivityHistory()),
+              MaterialPageRoute(
+                  builder: (context) => MyActivityHistory(),
+                  settings:
+                      RouteSettings(name: "/questListPage/myActivityHistory")),
             );
           },
           child: Consumer<UserInfoProvider>(

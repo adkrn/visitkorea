@@ -73,7 +73,9 @@ class SplashScreen extends StatelessWidget {
     print('로드 끝 : ${DateTime.now()}');
     // 모든 리소스 로딩이 완료되면 QuestListPage로 이동합니다.
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => QuestListPage()),
+      MaterialPageRoute(
+          builder: (context) => QuestListPage(),
+          settings: RouteSettings(name: "/questListPage")),
     );
   }
 
@@ -103,16 +105,19 @@ class MyNavigatorObserver extends NavigatorObserver {
     }
   }
 
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPop(route, previousRoute);
+    _sendPageView(route.settings.name);
+  }
+
   void _sendPageView(String? pageName) {
-    print('sendPageView');
+    print('sendPageView $pageName');
     if (pageName != null) {
       js.context.callMethod('gtag', [
         'config',
         'G-LYY1LJZCC4',
-        js.JsObject.jsify({
-          'page_path': pageName,
-          'page_title': pageName // 페이지 제목도 여기에 설정 가능
-        })
+        js.JsObject.jsify({'page_path': pageName, 'page_title': pageName})
       ]);
     }
   }

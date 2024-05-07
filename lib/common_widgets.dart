@@ -48,7 +48,10 @@ Widget buildTitleBannerImg(BuildContext context) {
         child: InkWell(
           onTap: () {
             Navigator.push(
-                context, MaterialPageRoute(builder: (context) => IntroPage()));
+                context,
+                MaterialPageRoute(
+                    builder: (context) => IntroPage(),
+                    settings: RouteSettings(name: "/questListPage/introPage")));
           },
           child: SizedBox(
             width: containerWidth,
@@ -96,7 +99,10 @@ Widget buildTitleBannerImg_mobile(BuildContext context) {
         child: InkWell(
           onTap: () {
             Navigator.push(
-                context, MaterialPageRoute(builder: (context) => IntroPage()));
+                context,
+                MaterialPageRoute(
+                    builder: (context) => IntroPage(),
+                    settings: RouteSettings(name: "/questListPage/introPage")));
           },
           child: SizedBox(
             width: containerWidth,
@@ -174,6 +180,12 @@ Widget buildNoticeSection_Mobile() {
             TextType.p14R,
             textColor: textColor,
             align: TextAlign.left),
+        const SizedBox(height: 8),
+        buildText(
+            "• 3단계 난이도형 도전과제의 경우 '배지/보상 수령' 클릭 전에는 도전과제를 여러 번 수행하여도 활동 횟수가 기록되지 않는 점 유의바랍니다.",
+            TextType.p14R,
+            textColor: const Color(0xFF7D7D7D),
+            align: TextAlign.left),
       ],
     ),
   );
@@ -224,6 +236,12 @@ Widget buildNoticeSection_Desktop() {
             const SizedBox(height: 8),
             buildText(
                 '• 대구석 첫걸음(회원가입), 지역 명예 주민(디지털 관광주민증 발급), 구독 준비 완료(가볼래-터 구독) 배지의 경우 기존 활동내역도 소급 적용됩니다. 그 외 배지콕콕 서비스 이전의 활동내역은 소급 적용되지 않습니다.',
+                TextType.p14R,
+                textColor: const Color(0xFF7D7D7D),
+                align: TextAlign.left),
+            const SizedBox(height: 8),
+            buildText(
+                "• 3단계 난이도형 도전과제의 경우 '배지/보상 수령' 클릭 전에는 도전과제를 여러 번 수행하여도 활동 횟수가 기록되지 않는 점 유의바랍니다.",
                 TextType.p14R,
                 textColor: const Color(0xFF7D7D7D),
                 align: TextAlign.left),
@@ -300,7 +318,10 @@ Widget buildRepresentativebadgesCard(bool isMobile) {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => MyActivityHistory()),
+                  MaterialPageRoute(
+                      builder: (context) => MyActivityHistory(),
+                      settings: RouteSettings(
+                          name: "/questListPage/myActivityHistory")),
                 );
               },
               style: const ButtonStyle(
