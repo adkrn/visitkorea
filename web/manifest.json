@@ -1,35 +1,11 @@
 {
-    "name": "visitkorea",
-    "short_name": "visitkorea",
+    "name": "배지콕콕 | 대한민국 구석구석",
+    "short_name": "배지콕콕 | 대한민국 구석구석",
     "start_url": ".",
-    "display": "standalone",
+    "display": "browser",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "배지콕콕은 대한민국 구석구석에서 다양한 활동을 수행하며 특색있는 배지를 모을 수 있는 서비스입니다. 도전과제 수행을 통해 얻은 랭킹점수로 랭킹전 참여가 가능하며, 선물도 받을 수 있습니다.",
     "orientation": "portrait-primary",
-    "prefer_related_applications": false,
-    "icons": [
-        {
-            "src": "icons/Icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-maskable-192.png",
-            "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "maskable"
-        },
-        {
-            "src": "icons/Icon-maskable-512.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "maskable"
-        }
-    ]
+    "prefer_related_applications": false
 }

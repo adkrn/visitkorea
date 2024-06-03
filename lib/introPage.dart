@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:visitkorea/common_widgets.dart';
 
+/// 타이틀 배너 클릭시 소개 페이지
 class IntroPage extends StatefulWidget {
   @override
   _IntroPageState createState() => _IntroPageState();
@@ -10,8 +11,6 @@ class _IntroPageState extends State<IntroPage> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    //4821, bot 48, left,right 51
-    //4613, 792, 240
 
     bool isMobile = screenWidth < 1000;
 
@@ -46,8 +45,8 @@ class _IntroPageState extends State<IntroPage> {
               width: screenWidth,
               child: Image.asset(
                 isMobile
-                    ? 'assets/introPage_Mobile.png'
-                    : 'assets/introPage_PC.png',
+                    ? 'assets/introPage/introPage_Mobile.png'
+                    : 'assets/introPage/introPage_PC.png',
                 fit: BoxFit.cover,
               ),
             ),

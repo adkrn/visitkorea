@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:visitkorea/model/userInfo.dart';
+import 'package:visitkorea/questListPage/questListPage.dart';
 import '../common_widgets.dart';
 import 'package:provider/provider.dart';
 import '../jsonLoader.dart';
 import 'package:flutter/cupertino.dart';
+import 'dart:js' as js;
 
 OverlayEntry? overlayEntry;
 
@@ -100,6 +102,21 @@ class _JoinEventPopup extends State<JoinEventPopup> {
           ), () {
         Navigator.of(context).pop(); // 대화상자 닫기
         showAlert('랭킹전 참여 완료되었습니다.');
+        js.context.callMethod('groobee.action', [
+          "PU",
+          js.JsObject.jsify({
+            'OrderNo':
+                '${userInfoProvider.userInfo.indexId}_${DateTime.now().millisecondsSinceEpoch}'
+          }),
+          js.JsObject.jsify({
+            'name': '배지콕콕 랭킹전 참여 배너 제출',
+            'code': 'badge_rank',
+            'amt': 1,
+            'prc': 1,
+            'salePrc': 1,
+            'cnt': 1
+          })
+        ]);
       });
     } else {
       if (isAgree) {

@@ -6,6 +6,7 @@ import '../common_widgets.dart';
 import '../main.dart';
 import 'package:provider/provider.dart';
 import '../jsonLoader.dart';
+import 'dart:js' as js;
 
 OverlayEntry? overlayEntry;
 OverlayEntry? alertOverlayEntry;
@@ -21,20 +22,10 @@ enum QuestPopupType {
 
 QuestPopupType questPopupType = QuestPopupType.unProgressed;
 
-// void showQeustPopup(BuildContext context, Quest quest) async {
-//   // 여기에서 OverlayEntry를 사용하여 팝업을 생성합니다.
-//   overlayEntry = OverlayEntry(
-//     builder: (context) => QuestInfoPopup(quest: quest),
-//   );
-
-//   // Overlay에 팝업 추가
-//   Overlay.of(context)?.insert(overlayEntry!);
-// }
-
 void showQuestPopup(BuildContext context, Quest quest) {
   showDialog(
     context: context,
-    barrierDismissible: true, // 다이얼로그 바깥을 탭하면 닫히도록 설정
+    barrierDismissible: true,
     builder: (BuildContext context) {
       return QuestInfoPopup(
         quest: quest,
@@ -43,7 +34,6 @@ void showQuestPopup(BuildContext context, Quest quest) {
   );
 }
 
-// 사용자 정의 팝업 위젯
 class QuestInfoPopup extends StatefulWidget {
   final Quest quest;
 
@@ -130,7 +120,7 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
       // TODO: Handle this case.
     }
 
-    if (widget.quest.questDetails.conditionName == '대구석VIP 달성하기') {
+    if (widget.quest.questDetails.groupIndex == 38) {
       if (widget.quest.progressType != ProgressType.completed)
         questPopupType = QuestPopupType.vip;
     }
@@ -200,7 +190,6 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
             color: Colors.transparent,
             child: Container(
               width: 360,
-              //height: setHeightByType(),
               padding: const EdgeInsets.all(16),
               clipBehavior: Clip.antiAlias,
               decoration: ShapeDecoration(
@@ -296,9 +285,9 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
                 onPressed: () {
                   showDialog(
                     context: context,
-                    barrierDismissible: false, // 다이얼로그 바깥을 탭해도 닫히지 않도록 설정
+                    barrierDismissible: false,
                     builder: (BuildContext context) {
-                      // 확인/취소 버튼이 있는 AlertDialog 생성
+                      // 대표 배지 설정 버튼 클릭시 표시되는 팝업
                       return CupertinoAlertDialog(
                         title: Text(
                           '대표 배지로 설정하시겠습니까?',
@@ -311,7 +300,7 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
                               style: TextStyle(fontFamily: 'NotoSansKR'),
                             ),
                             onPressed: () {
-                              Navigator.of(context).pop(); // 다이얼로그 닫기
+                              Navigator.of(context).pop();
                             },
                           ),
                           TextButton(
@@ -320,7 +309,6 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
                                     color: Colors.blue,
                                     fontFamily: 'NotoSansKR')),
                             onPressed: () {
-                              // 대표 배지 설정 로직을 여기에 추가하세요.
                               Provider.of<BadgeProvider>(context, listen: false)
                                   .setMainBadge(
                                       Provider.of<BadgeProvider>(context,
@@ -339,15 +327,13 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
                       );
                     },
                   );
-                  //Navigator.of(context).pop(); // 팝업 닫기
                 },
                 style: const ButtonStyle(
                   backgroundColor: MaterialStatePropertyAll(Color(0xFF7845E2)),
                   fixedSize: MaterialStatePropertyAll(Size(640, 40)),
                   shape: MaterialStatePropertyAll(
                     RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.all(Radius.circular(5)), // 모서리를 사각형으로 설정
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
                     ),
                   ),
                 ),
@@ -359,8 +345,6 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
             const SizedBox(height: 8),
             ElevatedButton(
                 onPressed: () {
-                  // overlayEntry?.remove(); // OverlayEntry 제거
-                  // overlayEntry = null;
                   Navigator.of(context).pop();
                 },
                 style: const ButtonStyle(
@@ -368,8 +352,7 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
                   fixedSize: MaterialStatePropertyAll(Size(640, 40)),
                   shape: MaterialStatePropertyAll(
                     RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.all(Radius.circular(5)), // 모서리를 사각형으로 설정
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
                     ),
                   ),
                 ),
@@ -384,15 +367,30 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
                   onPressed: () async {
                     Provider.of<QuestProvider>(context, listen: false)
                         .completeQuest(context, quest.questSnsId, () {
-                      // completeQuest가 성공적으로 완료된 후에 호출될 콜백
                       Provider.of<QuestProvider>(context, listen: false)
                           .refreshQuests();
                       Provider.of<BadgeProvider>(context, listen: false)
                           .refreshBadges();
-                      Provider.of<UserInfoProvider>(context, listen: false)
-                          .refreshData();
+                      UserInfoProvider userInfoProvider =
+                          Provider.of<UserInfoProvider>(context, listen: false);
+                      userInfoProvider.refreshData();
+                      // 그루비 스크립트 실행
+                      js.context.callMethod('groobee.action', [
+                        "PU",
+                        js.JsObject.jsify({
+                          'OrderNo':
+                              '${userInfoProvider.userInfo.indexId}_${DateTime.now().millisecondsSinceEpoch}'
+                        }),
+                        js.JsObject.jsify({
+                          'name': quest.questDetails.name,
+                          'code': 'badge_${quest.questDetails.indexId}',
+                          'amt': 1,
+                          'prc': 1,
+                          'salePrc': 1,
+                          'cnt': 1
+                        })
+                      ]);
                     });
-                    //Navigator.of(context).pop(); // 팝업 닫기
                   },
                   style: const ButtonStyle(
                     backgroundColor:
@@ -400,8 +398,7 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
                     fixedSize: MaterialStatePropertyAll(Size(640, 40)),
                     shape: MaterialStatePropertyAll(
                       RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(
-                            Radius.circular(5)), // 모서리를 사각형으로 설정
+                        borderRadius: BorderRadius.all(Radius.circular(5)),
                       ),
                     ),
                   ),
@@ -412,8 +409,6 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
             else
               ElevatedButton(
                   onPressed: () {
-                    // overlayEntry?.remove(); // OverlayEntry 제거
-                    // overlayEntry = null;
                     Navigator.of(context).pop();
                   },
                   style: const ButtonStyle(
@@ -421,8 +416,7 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
                     fixedSize: MaterialStatePropertyAll(Size(640, 40)),
                     shape: MaterialStatePropertyAll(
                       RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(
-                            Radius.circular(5)), // 모서리를 사각형으로 설정
+                        borderRadius: BorderRadius.all(Radius.circular(5)),
                       ),
                     ),
                   ),
@@ -435,10 +429,10 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
   }
 
   void openDialog() {
-    Navigator.of(context).pop(); // 알럿 닫기
+    Navigator.of(context).pop();
     showDialog(
       context: context,
-      barrierDismissible: false, // 사용자가 다이얼로그 바깥을 탭해도 닫히지 않도록 설정
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return CupertinoAlertDialog(
           title: Text(
@@ -453,8 +447,8 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
                   style:
                       TextStyle(color: Colors.blue, fontFamily: 'NotoSansKR')),
               onPressed: () {
-                Navigator.of(context).pop(); // 알럿 닫기
-                Navigator.of(context).pop(); // 팝업 닫기
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
               },
             ),
           ],
@@ -463,6 +457,7 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
     );
   }
 
+  // 팝업 배지 이미지 설정.
   Widget buildBadgeImage(Quest quest) {
     const String baseUrl = 'assets/';
     ProgressType progressType = quest.progressType;
@@ -471,7 +466,7 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
       switch (type) {
         case ProgressType.unProgressed:
           if (quest.questDetails.grade == '반복') {
-            if (quest.questDetails.conditionName == '대구석VIP 달성하기') {
+            if (quest.questDetails.groupIndex == 38) {
               return '${baseUrl}unknown/${quest.questDetails.unknownBadge!.imgName}.png';
             } else {
               return '${baseUrl}unknown/img_badge_point_unknown.png';
@@ -487,7 +482,7 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
           }
         case ProgressType.completed:
           if (quest.questDetails.grade == '반복') {
-            if (quest.questDetails.conditionName == '대구석VIP 달성하기') {
+            if (quest.questDetails.groupIndex == 38) {
               return '${baseUrl}unknown/${quest.questDetails.unknownBadge!.imgName}.png';
             } else {
               return '${baseUrl}enable/img_badge_point_enable.png';
@@ -555,13 +550,12 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
           if (progressType.index > 1 && progressType != ProgressType.expiration)
             buildText('도전 성공!', TextType.h6, textColor: const Color(0xFF7845E2))
           else
-            quest.questDetails.conditionName != '대구석VIP 달성하기'
+            quest.questDetails.groupIndex != 38
                 ? buildProgressText(quest)
                 : SizedBox(),
         ],
       ),
-      if (progressType.index < 2 &&
-          quest.questDetails.conditionName != '대구석VIP 달성하기') ...[
+      if (progressType.index < 2 && quest.questDetails.groupIndex != 38) ...[
         const SizedBox(height: 8),
         ClipRRect(
           borderRadius: BorderRadius.circular(6), // 모서리 둥글기
@@ -569,7 +563,7 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
             width: 230,
             height: 12,
             child: LinearProgressIndicator(
-              value: progress, // 현재 진행률
+              value: progress,
               backgroundColor: Colors.grey[200],
               valueColor:
                   const AlwaysStoppedAnimation<Color>(Color(0xFF7845E2)),
@@ -581,9 +575,8 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
   }
 
   Widget buildGetMethodDescription(Quest quest) {
-    // '획득방법'을 분리
     var splitDescription = getQuestMethodDesc().split('<br>');
-    String details = splitDescription.skip(0).join('\n'); // 나머지 설명
+    String details = splitDescription.skip(0).join('\n');
 
     return Container(
       width: 326,
@@ -613,7 +606,6 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // actionCount 부분
         buildText(
           '${quest.actionCount}',
           TextType.h6,
@@ -622,7 +614,6 @@ class _QuestInfoPopupState extends State<QuestInfoPopup> {
         const SizedBox(width: 8),
         Image.asset('assets/popupTextLine.png'),
         const SizedBox(width: 8),
-        // 슬래시(/) 및 actionCountValue 부분
         buildText('${quest.questDetails.actionCountValue}', TextType.h6),
       ],
     );

@@ -17,7 +17,8 @@ import 'package:visitkorea/myBadgeCollections/myBadgeCollections.dart';
 import 'dart:js' as js;
 
 const String _baseUrl = 'assets/';
-late UserPrivacyInfoProvider provider;
+late UserPrivacyInfoProvider userPrivacyprovider;
+late UserInfoProvider userInfoProvider;
 
 List<String> dropdownValuelist = <String>['2024년'];
 
@@ -56,7 +57,9 @@ class _QuestListPageState extends State<QuestListPage> {
     print('didChangeDependencies Start');
     super.didChangeDependencies();
     if (!_isProviderInitialized) {
-      provider = Provider.of<UserPrivacyInfoProvider>(context, listen: false);
+      userPrivacyprovider =
+          Provider.of<UserPrivacyInfoProvider>(context, listen: false);
+      userInfoProvider = Provider.of<UserInfoProvider>(context, listen: false);
     }
     print('didChangeDependencies End');
   }
@@ -67,8 +70,8 @@ class _QuestListPageState extends State<QuestListPage> {
     super.initState();
 
     Future.microtask(() async {
-      await provider.refreshData();
-
+      await userPrivacyprovider.refreshData();
+      await userInfoProvider.refreshData();
       setState(() {
         _isProviderInitialized = true;
       });
@@ -90,6 +93,7 @@ void redirectToUrl(String url) {
   js.context.callMethod('open', [url, '_self']);
 }
 
+// 퀘스트 리스트 필터링
 List<Quest> filterQuests(List<Quest> quests, List<Badge_completed> badges) {
   List<Quest> filterQuest = List.from(quests);
 
@@ -140,15 +144,17 @@ void _removeNextGradeQuests(
   _removeNextGradeQuests(filterQuest, quests, nQuest?.questDetails.nextQuestId);
 }
 
+// 퀘스트 리스트에 표시될 배지 이미지 설정.
 Widget getQuestImageByProgressType(BuildContext context, Quest quest,
     {double imageWidth = 90, double imageHeight = 90}) {
   ProgressType progressType = quest.progressType;
 
+  // 배지 상태에 따른 이미지 설정
   String getImageUrl(ProgressType type) {
     switch (type) {
       case ProgressType.unProgressed:
         if (quest.questDetails.grade == '반복') {
-          if (quest.questDetails.conditionName == '대구석VIP 달성하기') {
+          if (quest.questDetails.groupIndex == 38) {
             return '${_baseUrl}unknown/${quest.questDetails.unknownBadge!.imgName}.png';
           } else {
             return '${_baseUrl}enable/${quest.questDetails.unknownBadge!.imgName}.png';
@@ -177,7 +183,6 @@ Widget getQuestImageByProgressType(BuildContext context, Quest quest,
   double progress = quest.actionCount / quest.questDetails.actionCountValue;
   DateTime now = DateTime.now();
 
-  //print('ImageSize : $imageWidth , $imageHeight');
   return InkWell(
       onTap: () => showQuestPopup(context, quest),
       child: Stack(
@@ -185,18 +190,18 @@ Widget getQuestImageByProgressType(BuildContext context, Quest quest,
         children: [
           if (progressType != ProgressType.receive) ...[
             Image.asset(
-              imageUrl, // 서버에 저장된 이미지 URL
+              imageUrl,
               width: imageWidth,
               height: imageHeight,
-              fit: BoxFit.contain, // 이미지 적절히 조정
+              fit: BoxFit.contain,
             ),
             SizedBox(
               width: imageWidth,
               height: imageHeight,
               child: CircularProgressIndicator(
-                value: progress, // 진행율 설정
-                backgroundColor: const Color(0xffD6D6D6), // 배경 색상
-                color: const Color(0xff5869FF), // 진행 색상
+                value: progress,
+                backgroundColor: const Color(0xffD6D6D6),
+                color: const Color(0xff5869FF),
                 strokeWidth: 5,
               ),
             ),
@@ -239,10 +244,10 @@ Widget getQuestImageByProgressType(BuildContext context, Quest quest,
               ),
           ] else ...[
             Image.asset(
-              imageUrl, // 서버에 저장된 이미지 URL
+              imageUrl,
               width: 109,
               height: imageHeight,
-              fit: BoxFit.fitWidth, // 이미지 적절히 조정
+              fit: BoxFit.fitWidth,
             ),
           ]
         ],
@@ -250,8 +255,7 @@ Widget getQuestImageByProgressType(BuildContext context, Quest quest,
 }
 
 void launchURL() async {
-  var url = Uri.http(
-      'https://$domain', '/common/login.do'); // 여기에 원하는 웹페이지 주소를 입력하세요.
+  var url = Uri.http('https://$domain', '/common/login.do');
   if (await canLaunchUrl(url)) {
     await launchUrl(url);
   } else {
@@ -269,9 +273,7 @@ void showRankAlert(String message, BuildContext context) {
           style: TextStyle(fontFamily: 'NotoSansKR'),
         ),
         content: SingleChildScrollView(
-          // 내용이 길어질 수 있으므로 SingleChildScrollView 사용
           child: ListBody(
-            // ListBody를 사용하여 자식들이 수직으로 배치되도록 함
             children: <Widget>[
               Text(message, style: TextStyle(fontFamily: 'NotoSansKR')),
             ],
@@ -282,7 +284,7 @@ void showRankAlert(String message, BuildContext context) {
             child: const Text('확인',
                 style: TextStyle(color: Colors.blue, fontFamily: 'NotoSansKR')),
             onPressed: () {
-              Navigator.of(context).pop(); // 대화상자 닫기
+              Navigator.of(context).pop();
             },
           ),
         ],
@@ -291,6 +293,7 @@ void showRankAlert(String message, BuildContext context) {
   );
 }
 
+// 랭킹 집계가 안됐을 때 표시하는 팝업
 void buildRankPopup(BuildContext context) {
   bool isMobile = MediaQuery.of(context).size.width < 910;
   showDialog(
@@ -662,7 +665,7 @@ class _UserInfoAgreementCancelPopupState
   }
 }
 
-/// 메인 페이지 유저 배너
+/// 퀘스트 페이지 유저 정보 표시 배너 클래스
 class MainBanner extends StatefulWidget {
   MainBanner({
     Key? key,
@@ -673,25 +676,35 @@ class MainBanner extends StatefulWidget {
 }
 
 class _MainBannerState extends State<MainBanner> {
+  // 랭킹보기 버튼 클릭시 호출되는 메소드
   void openRankingPage() async {
     DateTime now = DateTime.now();
     DateTime openDate = DateTime(2024, 4, 29);
-    DateTime rankingOpenDate = DateTime(2024, 6, 3);
+    DateTime rankingOpenDate = DateTime(2024, 5, 22, 17);
+
+    print(now);
 
     try {
       RankingProvider rankingProvider =
           Provider.of<RankingProvider>(context, listen: false);
       await rankingProvider.refreshData('M');
 
+      // 2024년 5월 22일 전에는 무조건 집계중 팝업 표시
       if (now.isAfter(openDate) && now.isBefore(rankingOpenDate)) {
+        print('a');
         buildRankPopup(context);
       } else {
-        UserPrivacyInfo privacyInfo = provider.userPrivacyInfo;
+        print('b');
+        UserPrivacyInfo privacyInfo = userPrivacyprovider.userPrivacyInfo;
 
+        // 랭킹전 동의 여부에 따라 분기 설정.
         if (privacyInfo.isPrivacyAgree) {
+          // 랭킹 그룹 정보에 설정된 집계 날짜 전일경우 집계중 팝업 표시
           if (now.isBefore(rankingProvider.groupsInfo.confirmDate)) {
+            print('c');
             buildRankPopup(context);
           } else {
+            print('d');
             Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -701,10 +714,12 @@ class _MainBannerState extends State<MainBanner> {
                 ));
           }
         } else {
+          // 랭킹전 비동의시 기본 아이폰 알럿 표시
           showRankAlert('랭킹전을 참여하려면 개인정보수집동의가 필요합니다.', context);
         }
       }
     } catch (e) {
+      // 에러날때 집계중 팝업 표시
       print('error : $e');
       buildRankPopup(context);
     }
@@ -820,6 +835,7 @@ class _MainBannerState extends State<MainBanner> {
     );
   }
 
+  // 대표배지, 유저 이름, 발자국 포인트 설정.
   Widget buildUserInfo(bool isMobile) {
     return SizedBox(
       child: Column(
@@ -827,6 +843,7 @@ class _MainBannerState extends State<MainBanner> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            ////// 대표 배지 설정
             if (mainBadge != null) ...[
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -847,6 +864,7 @@ class _MainBannerState extends State<MainBanner> {
                 TextType.p14M,
                 textColor: const Color(0xFF7D7D7D),
               ),
+            //////
             const SizedBox(height: 4),
             Consumer<UserInfoProvider>(
               builder: (context, provider, child) {
@@ -854,6 +872,14 @@ class _MainBannerState extends State<MainBanner> {
                   return buildText('불러오는중..', TextType.p14R);
                 }
 
+                try {
+                  js.context.callMethod(
+                      'setMemberId', [provider.userInfo.snsUserName]);
+                } catch (e) {
+                  print('Error: $e');
+                }
+
+                // 유저이름 설정.
                 return Text(
                   userSession != null
                       ? '${provider.userInfo.snsUserName}님'
@@ -867,12 +893,14 @@ class _MainBannerState extends State<MainBanner> {
                 );
               },
             ),
-            const SizedBox(height: 8), // 간격 조정
+            const SizedBox(height: 8),
+            // 발자국 포인트 설정
             buildStepIconWithPoint(context),
           ]),
     );
   }
 
+  // 비로그인시 표시되는 텍스트 설정.
   Widget buildNonLogin(bool isMobile, {double screenSize = 0}) {
     return SizedBox(
       //width: isMobile ? 220 : 405,
@@ -903,6 +931,7 @@ class _MainBannerState extends State<MainBanner> {
     );
   }
 
+  // 랭킹보기, 배지도감 버튼 설정
   Widget buildButtons(bool isMobile) {
     if (!isMobile) {
       return SizedBox(
@@ -1003,17 +1032,17 @@ class _MainBannerState extends State<MainBanner> {
     }
   }
 
+  // 로그인 버튼
   Widget buildLoginButton(bool isMobile) {
     return buildButton(
         '로그인 후 배지 획득하기', Size(isMobile ? double.infinity : 320, 39),
         onPressed: () {
-      String url = 'https://$domain/common/login.do'; // 여기에 원하는 웹페이지 주소를 입력하세요.
+      String url = 'https://$domain/common/login.do';
       redirectToUrl(url);
     });
   }
 
-  // 퀘스트 페이지 대표배지 이미지.
-  // mainBadge 데이터 변경시 내용이 변경되야함.
+  // 퀘스트 페이지 대표배지 이미지 불러오기.
   Widget buildMainBadgeImage(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     bool isMobile = screenWidth < 1000;
@@ -1035,7 +1064,7 @@ class _MainBannerState extends State<MainBanner> {
     );
   }
 
-  // 퀘스트 페이지 대표배지 설정 Card와 랭킹 페이지에 쓰이는 발자국 아이콘과 포인트
+  // 랭킹 페이지에 쓰이는 발자국 아이콘과 포인트
   Widget buildStepIconWithPoint(BuildContext context) {
     return Row(
       //mainAxisSize: MainAxisSize.min,
@@ -1097,68 +1126,3 @@ class _MainBannerState extends State<MainBanner> {
     );
   }
 }
-
-// // 퀘스트 페이지 로그인 했을 때 표시되는 상단 대표 배지 박스 내용.
-// // mainBadge 데이터 변경시 내용이 변경되야함.
-// Widget buildLoginText(BuildContext context) {
-//   return Column(
-//       mainAxisSize: MainAxisSize.min,
-//       mainAxisAlignment: MainAxisAlignment.start,
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         if (mainBadge != null) ...[
-//           Container(
-//             //width: 89,
-//             height: 28,
-//             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-//             decoration: ShapeDecoration(
-//               color: const Color(0xFF4A63AE),
-//               shape: RoundedRectangleBorder(
-//                   borderRadius: BorderRadius.circular(5)),
-//             ),
-//             child: Text(
-//               '${mainBadge?.badgeinfo.name}',
-//               style: const TextStyle(
-//                 color: Colors.white,
-//                 fontSize: 14,
-//                 fontFamily: 'NotoSansKR',
-//                 fontWeight: FontWeight.w500,
-//               ),
-//               textAlign: TextAlign.center,
-//             ),
-//           )
-//         ] else
-//           const Text(
-//             '대표배지를 설정해주세요',
-//             style: TextStyle(
-//               color: Color(0xFF7D7D7D),
-//               fontSize: 12,
-//               fontFamily: 'NotoSansKR',
-//               fontWeight: FontWeight.w500,
-//               height: 1.4, // 줄 높이 조정
-//               letterSpacing: -0.24,
-//             ),
-//           ),
-//         const SizedBox(height: 4),
-//         Consumer<UserInfoProvider>(
-//           builder: (context, provider, child) {
-//             if (provider.isLoading) {
-//               return const Text('불러오는중..');
-//             }
-//             return Text(
-//               isLogin && userSession != null
-//                   ? provider.userInfo.snsUserName
-//                   : '이름이 현재 설정되있지 않습니다.',
-//               style: const TextStyle(
-//                 fontSize: 14,
-//                 color: Colors.black,
-//                 fontFamily: 'NotoSansKR',
-//                 fontWeight: FontWeight.w700,
-//               ),
-//             );
-//           },
-//         ),
-//         const SizedBox(height: 10), // 간격 조정
-//         buildStepIconWithPoint(context),
-//       ]);
-// }

@@ -325,11 +325,6 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
     );
   }
 
-  // 이전 랭크값
-  int preRank = 0;
-  // 랭크가 겹치는 값.
-  int sumRankTempValue = 0;
-
   Widget buildRankGridList() {
     return Consumer<RankingProvider>(
       builder: (context, rankingProvider, child) {
@@ -363,14 +358,7 @@ class _MobileLayoutState_rankingList extends State<MobileLayout_rankingList> {
   }
 
   Widget buildRankGridItem(UserRankingInfo userRankingInfo) {
-    int rank = userRankingInfo.ranking + sumRankTempValue;
-    if (preRank == rank) {
-      sumRankTempValue++;
-    } else {
-      rank += sumRankTempValue;
-      preRank = rank;
-    }
-
+    int rank = userRankingInfo.ranking;
     return Column(
       children: [
         Container(

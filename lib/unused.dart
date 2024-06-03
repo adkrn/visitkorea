@@ -1,6 +1,3 @@
-import 'package:flutter/material.dart';
-import '../common_widgets.dart';
-
 // // 안쓰는 부분
 // Widget buildTitleBanner() {
 //   return Container(

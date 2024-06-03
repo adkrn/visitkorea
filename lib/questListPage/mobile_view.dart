@@ -170,7 +170,7 @@ class _MobileLayoutState_questList extends State<MobileLayout_questList> {
           // VIP 배지를 보유중인지 체크
           // 배지수령중인 상태를 체크하려면 isCompleted가 false인 상태에서 완료됐는지 체크가 되야하는데
           // Action Count(달성조건)가 0이기 때문에 체크 할 방법이 현재는 없음. 수령 안한 상태를 적용 할 수가 없음.
-          if (quest.questDetails.conditionName == '대구석VIP 달성하기') {
+          if (quest.questDetails.groupIndex == 38) {
             if (quest.progressType.index > 1) {
               isVIP = true;
             }
@@ -205,7 +205,7 @@ class _MobileLayoutState_questList extends State<MobileLayout_questList> {
           }
         }
         List<Quest> vipBadges = quests
-            .where((quest) => quest.questDetails.conditionName == '대구석VIP 달성하기')
+            .where((quest) => quest.questDetails.groupIndex == 38)
             .toList();
 
         if (isVIP == false) {
@@ -323,7 +323,7 @@ Widget buildGrid(List<Quest> quest, double pWidth, double pHeight,
           // 퀘스트 이름 표시.
           // VIP 퀘스트면(orderIndex == 20) conditionName을 표시
           buildText(
-              quest[index].questDetails.orderIndex == 20
+              quest[index].questDetails.groupIndex == 38
                   ? quest[index].completed
                       ? quest[index].questDetails.name
                       : quest[index].questDetails.conditionName

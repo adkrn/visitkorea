@@ -16,24 +16,13 @@ import 'package:http/http.dart' as http;
 import '../main.dart';
 import 'package:screenshot/screenshot.dart';
 import 'dart:js' as js;
-import 'dart:convert';
 
 OverlayEntry? overlayEntry;
-
-// void showBadgePopup(BuildContext context, Badge_completed badge) async {
-//   // 여기에서 OverlayEntry를 사용하여 팝업을 생성합니다.
-//   overlayEntry = OverlayEntry(
-//     builder: (context) => BadgeInfoPopup(badge: badge),
-//   );
-
-//   // Overlay에 팝업 추가
-//   Overlay.of(context)?.insert(overlayEntry!);
-// }
 
 void showBadgePopup(BuildContext context, Badge_completed badge) {
   showDialog(
     context: context,
-    barrierDismissible: true, // 다이얼로그 바깥을 탭하면 닫히도록 설정
+    barrierDismissible: true,
     builder: (BuildContext context) {
       return BadgeInfoPopup(
         badge: badge,
@@ -67,23 +56,6 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
     String userAgent = js.context.callMethod('getUserAgent').toString();
     print('User Agent: $userAgent');
 
-    // Future<void> downloadFile(String imgUrl) async {
-    //   Dio dio = Dio();
-
-    //   try {
-    //     var dir = await getApplicationDocumentsDirectory();
-    //     await dio.download(imgUrl, '${dir.path}/myimage.png',
-    //         onReceiveProgress: (rec, total) {
-    //       print('Rec : $rec , Total : $total');
-    //       file = '${dir.path}/myimage.png';
-    //     });
-    //   } catch (e) {
-    //     print(e);
-    //   }
-
-    //   print('Download completed');
-    // }
-
     return Future.delayed(
       const Duration(milliseconds: 20),
       () async {
@@ -97,9 +69,7 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
                   style: TextStyle(fontFamily: 'NotoSansKR'),
                 ),
                 content: SingleChildScrollView(
-                  // 내용이 길어질 수 있으므로 SingleChildScrollView 사용
                   child: ListBody(
-                    // ListBody를 사용하여 자식들이 수직으로 배치되도록 함
                     children: <Widget>[
                       Text(debuglog,
                           style: TextStyle(fontFamily: 'NotoSansKR')),
@@ -112,7 +82,7 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
                         style: TextStyle(
                             fontFamily: 'NotoSansKR', color: Colors.blue)),
                     onPressed: () {
-                      Navigator.of(context).pop(); // 대화상자 닫기
+                      Navigator.of(context).pop();
                     },
                   ),
                 ],
@@ -131,9 +101,9 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
             url,
             headers: {
               'SNS_ID': '${userSession?.snsId}',
-              'Cache-Control': 'no-store', // 캐시 방지
-              'Pragma': 'no-store', // 캐시 방지
-              'Expires': '0', // 캐시 방지
+              'Cache-Control': 'no-store',
+              'Pragma': 'no-store',
+              'Expires': '0',
             },
           );
 
@@ -162,46 +132,10 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
           }
         } catch (e) {
           showDebugAlert('User Agent: $userAgent\n error : $e');
-          //showDebugAlert('error : $e');
           print('error : $e');
         }
       },
     );
-
-    // String downloadUrl = '';
-    // Uint8List image = Uint8List(0);
-
-    // screenshotController.capture(delay: const Duration(milliseconds: 10)).then(
-    //   (capturedImage) async {
-    //     downloadUrl = downloadImage(capturedImage!);
-    //     image = capturedImage;
-
-    //     if (downloadUrl == '') {
-    //       print('downloadUrl is empty');
-    //       return;
-    //     }
-
-    //     if (userAgent.toLowerCase().contains('iphone') ||
-    //         userAgent.toLowerCase().contains('ipad')) {
-    //       print('iOS');
-    //       js.context.callMethod('downloadImageIos', [downloadUrl]);
-    //     } else if (userAgent.toLowerCase().contains('android')) {
-    //       js.context.callMethod('downloadImageAndroid', [downloadUrl]);
-    //       print('Android call method!');
-    //     } else if (userAgent.toLowerCase().contains('macintosh')) {
-    //       print('iOS');
-    //       js.context.callMethod('downloadImageIos', [downloadUrl]);
-    //     } else if (userAgent.toLowerCase().contains('ipod')) {
-    //       print('iOS');
-    //       js.context.callMethod('downloadImageIos', [downloadUrl]);
-    //     } else {
-    //       print('Other');
-    //       ShowCapturedWidget(image, downloadUrl);
-    //     }
-    //   },
-    // ).catchError((onError) {
-    //   print(onError);
-    // });
   }
 
   var src = GlobalKey();
@@ -229,7 +163,6 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
                   color: Colors.transparent,
                   child: Container(
                     width: 360,
-                    //height: widget.badge.isUse ? 480 : 544,
                     padding: const EdgeInsets.all(16),
                     clipBehavior: Clip.antiAlias,
                     decoration: ShapeDecoration(
@@ -445,7 +378,6 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
   Widget buildSetButton(BuildContext context, Badge_completed badge) {
     return SizedBox(
       width: 326,
-      //height: badge.isUse ? 42 : 92,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.start,
@@ -456,9 +388,8 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
               onPressed: () {
                 showDialog(
                   context: context,
-                  barrierDismissible: false, // 다이얼로그 바깥을 탭해도 닫히지 않도록 설정
+                  barrierDismissible: false,
                   builder: (BuildContext context) {
-                    // 확인/취소 버튼이 있는 AlertDialog 생성
                     return CupertinoAlertDialog(
                       title: const Text(
                         '대표 배지로 설정하시겠습니까?',
@@ -469,7 +400,7 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
                           child: const Text('취소',
                               style: TextStyle(fontFamily: 'NotoSansKR')),
                           onPressed: () {
-                            Navigator.of(context).pop(); // 다이얼로그 닫기
+                            Navigator.of(context).pop();
                           },
                         ),
                         TextButton(
@@ -479,7 +410,6 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
                                 fontFamily: 'NotoSansKR', color: Colors.blue),
                           ),
                           onPressed: () {
-                            // 대표 배지 설정 로직을 여기에 추가하세요.
                             Provider.of<BadgeProvider>(context, listen: false)
                                 .setMainBadge(badge.badgeSnsId, openDialog);
                           },
@@ -488,15 +418,13 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
                     );
                   },
                 );
-                //Navigator.of(context).pop(); // 팝업 닫기
               },
               style: const ButtonStyle(
                 backgroundColor: MaterialStatePropertyAll(Color(0xFF7845E2)),
                 fixedSize: MaterialStatePropertyAll(Size(640, 42)),
                 shape: MaterialStatePropertyAll(
                   RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.all(Radius.circular(3)), // 모서리를 사각형으로 설정
+                    borderRadius: BorderRadius.all(Radius.circular(3)),
                   ),
                 ),
               ),
@@ -520,8 +448,7 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
               shape: MaterialStatePropertyAll(
                 RoundedRectangleBorder(
                   side: BorderSide(color: Colors.black, width: 1),
-                  borderRadius:
-                      BorderRadius.all(Radius.circular(3)), // 모서리를 사각형으로 설정
+                  borderRadius: BorderRadius.all(Radius.circular(3)),
                 ),
               ),
             ),
@@ -534,15 +461,14 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
           const SizedBox(height: 8),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop(); // 다이얼로그 닫기
+              Navigator.of(context).pop();
             },
             style: const ButtonStyle(
               backgroundColor: MaterialStatePropertyAll(Colors.black),
               fixedSize: MaterialStatePropertyAll(Size(640, 40)),
               shape: MaterialStatePropertyAll(
                 RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.all(Radius.circular(3)), // 모서리를 사각형으로 설정
+                  borderRadius: BorderRadius.all(Radius.circular(3)),
                 ),
               ),
             ),
@@ -558,10 +484,10 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
   }
 
   void openDialog() {
-    Navigator.of(context).pop(); // 알럿 닫기
+    Navigator.of(context).pop();
     showDialog(
       context: context,
-      barrierDismissible: false, // 사용자가 다이얼로그 바깥을 탭해도 닫히지 않도록 설정
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return CupertinoAlertDialog(
           title: Text(
@@ -579,8 +505,8 @@ class _BadgeInfoPopupState extends State<BadgeInfoPopup> {
                 style: TextStyle(fontFamily: 'NotoSansKR'),
               ),
               onPressed: () {
-                Navigator.of(context).pop(); // 알럿 닫기
-                Navigator.of(context).pop(); // 팝업 닫기
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
               },
             ),
           ],
@@ -605,7 +531,6 @@ Widget buildQuestProgressInfo(Badge_completed badge) {
     mainAxisAlignment: MainAxisAlignment.center,
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
-      // 이 부분은 배지 액션 타입을 불러와서 처리해야할듯.
       buildText(badge.badgeinfo.name, TextType.p16M),
       const SizedBox(width: 8),
       buildText('도전 성공!', TextType.h6, textColor: const Color(0xFF7845E2))

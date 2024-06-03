@@ -7,18 +7,13 @@ import 'model/userInfo.dart';
 import 'package:flutter/services.dart';
 import 'dart:js' as js;
 
-// 임시 테스트 변수
 bool isEventAccept = false; // 이벤트 참여동의 여부
 UserSession? userSession;
 Badge_completed? mainBadge;
 
 void main() async {
-  //print('앱시작 : ${DateTime.now()}');
-  WidgetsFlutterBinding.ensureInitialized(); // Flutter 엔진과의 바인딩을 초기화합니다.
-
+  // Provider 설정.
   await fetchSession();
-
-  print('세션 로드 끝 : ${DateTime.now()}');
   runApp(
     MultiProvider(providers: [
       ChangeNotifierProvider(create: (context) => QuestProvider(), lazy: false),
@@ -38,8 +33,29 @@ void main() async {
   //print('Provider create 끝 : ${DateTime.now()}');
 }
 
-Future<void> loadFonts() async {
-  await FontLoader('NotoSansKR').load();
+// 폰트를 미리 불러오기
+Future<void> loadFonts(BuildContext context) async {
+  print('폰트 로드 시작');
+
+  var fontLoader = FontLoader('NotoSansKR');
+
+  // 모든 폰트 로딩
+  fontLoader.addFont(fetchFont('assets/fonts/NotoSansKR-Regular.woff'));
+  fontLoader.addFont(fetchFont('assets/fonts/NotoSansKR-Medium.woff'));
+  fontLoader.addFont(fetchFont('assets/fonts/NotoSansKR-Bold.woff'));
+
+  await fontLoader.load();
+  print('폰트로드 완료');
+  // await Future.wait([
+  //   Provider.of<UserPrivacyInfoProvider>(context, listen: false)
+  //       .fetchUserPrivacyInfo(),
+  //   Provider.of<UserInfoProvider>(context, listen: false).fetchUserInfo()
+  // ]);
+}
+
+Future<ByteData> fetchFont(String path) async {
+  print(path);
+  return await rootBundle.load(path);
 }
 
 class MyApp extends StatelessWidget {
@@ -51,45 +67,25 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
-      home: FutureProvider(
-        create: (context) => QuestProvider().fetchQuest(),
-        initialData: Center(
-          child: CircularProgressIndicator(),
-        ),
-        child: QuestListPage(),
+      home: FutureBuilder(
+        future: loadFonts(context),
+        builder: (context, snapshot) {
+          // FutureBuilder는 future가 완료되면 builder를 다시 호출합니다.
+          if (snapshot.connectionState == ConnectionState.done) {
+            // 지연 후 QuestListPage를 표시합니다.
+            return Scaffold(body: QuestListPage());
+          } else {
+            // 지연이 진행되는 동안 로딩 인디케이터를 표시할 수 있습니다.
+            return Scaffold(body: Center(child: CircularProgressIndicator()));
+          }
+        },
       ),
       navigatorObservers: [MyNavigatorObserver()],
     );
   }
 }
 
-class SplashScreen extends StatelessWidget {
-  Future<void> _loadResources(BuildContext context) async {
-    print('로드 시작 : ${DateTime.now()}');
-    await Future.wait([
-      loadFonts(),
-    ]);
-
-    print('로드 끝 : ${DateTime.now()}');
-    // 모든 리소스 로딩이 완료되면 QuestListPage로 이동합니다.
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-          builder: (context) => QuestListPage(),
-          settings: RouteSettings(name: "/questListPage")),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    _loadResources(context);
-    return Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
-}
-
+// 페이지 이동시 같이 호출되는 ga태그 수신 클래스
 class MyNavigatorObserver extends NavigatorObserver {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {

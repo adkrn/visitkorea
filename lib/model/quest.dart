@@ -159,6 +159,7 @@ class QuestDetails {
   final int rewardPoint;
   final String conditionName;
   final ExposeStatus exposeStatus;
+  final int groupIndex;
 
   QuestDetails({
     required this.questId,
@@ -185,43 +186,44 @@ class QuestDetails {
     required this.rewardPoint,
     required this.conditionName,
     required this.exposeStatus,
+    required this.groupIndex,
   });
 
   factory QuestDetails.fromJson(Map<String, dynamic> json) {
     return QuestDetails(
-      questId: json['questId'],
-      name: json['name'],
-      description: json['description'],
-      getMethodDescription: json['getMethodDescription'],
-      questType: getQuestType(json['questType']),
-      grade: getQuestGrade(json['grade']),
-      nextQuestId: json['nextQuestId'],
-      questActionType: QuestActionType.fromJson(json['questActionType']),
-      actionCountValue: json['actionCountValue'],
-      activationStartDate: json['activationStartDate'].toString(),
-      activationEndDate: json['activationEndDate'].toString(),
-      checkCycleTime: json['checkCycleTime'],
-      repeatCount: json['repeatCount'],
-      enableBadge: json['enableBadge'] != null
-          ? Badge_visitKorean.fromJson(json['enableBadge'])
-          : null,
-      disableBadge: json['disableBadge'] != null
-          ? Badge_visitKorean.fromJson(json['disableBadge'])
-          : null,
-      unknownBadge: json['unknownBadge'] != null
-          ? Badge_visitKorean.fromJson(json['unknownBadge'])
-          : null,
-      indexId: json['indexId'],
-      orderIndex: json['orderIndex'],
-      questActionTypeDetail: json['questActionTypeDetail'],
-      questTargetType: json['questTargetType'],
-      questTargetTypeValue: json['questTargetTypeValue'],
-      rewardPoint: json['rewardPoint'],
-      conditionName: json['conditionName'],
-      exposeStatus: getExpseStatus(
-        json['exposeStatus'],
-      ),
-    );
+        questId: json['questId'],
+        name: json['name'],
+        description: json['description'],
+        getMethodDescription: json['getMethodDescription'],
+        questType: getQuestType(json['questType']),
+        grade: getQuestGrade(json['grade']),
+        nextQuestId: json['nextQuestId'],
+        questActionType: QuestActionType.fromJson(json['questActionType']),
+        actionCountValue: json['actionCountValue'],
+        activationStartDate: json['activationStartDate'].toString(),
+        activationEndDate: json['activationEndDate'].toString(),
+        checkCycleTime: json['checkCycleTime'],
+        repeatCount: json['repeatCount'],
+        enableBadge: json['enableBadge'] != null
+            ? Badge_visitKorean.fromJson(json['enableBadge'])
+            : null,
+        disableBadge: json['disableBadge'] != null
+            ? Badge_visitKorean.fromJson(json['disableBadge'])
+            : null,
+        unknownBadge: json['unknownBadge'] != null
+            ? Badge_visitKorean.fromJson(json['unknownBadge'])
+            : null,
+        indexId: json['indexId'],
+        orderIndex: json['orderIndex'],
+        questActionTypeDetail: json['questActionTypeDetail'],
+        questTargetType: json['questTargetType'],
+        questTargetTypeValue: json['questTargetTypeValue'],
+        rewardPoint: json['rewardPoint'],
+        conditionName: json['conditionName'],
+        exposeStatus: getExpseStatus(
+          json['exposeStatus'],
+        ),
+        groupIndex: json['groupIndex']);
   }
 }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:visitkorea/model/userInfo.dart';
 import 'package:visitkorea/model/userHistory.dart';
@@ -8,10 +9,16 @@ import 'model/quest.dart';
 import 'package:flutter/services.dart';
 import 'main.dart';
 import 'package:flutter/cupertino.dart';
+import 'dart:html' as html;
 
-String domain = 'dev.ktovisitkorea.com';
+String getDomain() {
+  var uri = Uri.parse(html.window.location.href);
+  return uri.host;
+}
+
+String domain = getDomain();
 //'dev.ktovisitkorea.com'
-//'121.126.153.150:8080'  로컬 개발계 서버 주소
+//'121.126.153.150:8080'
 //'stage.visitkorea.or.kr'
 //'korean.visitkorea.or.kr'
 
@@ -33,60 +40,32 @@ class QuestProvider with ChangeNotifier {
     int activationStartDateTimeStamp = 2024,
     int activationEndDateTimeStamp = 2999,
   }) async {
-    if (_isLoading) return; // 이미 데이터 로딩 중이라면 중복 실행 방지, 빈 리스트 반환
+    if (_isLoading) return;
     print('퀘스트 로드 시작');
     _isLoading = true;
-    notifyListeners(); // 로딩 상태 업데이트
+    notifyListeners();
     Map<String, dynamic> queryParameters = {
       'size': '300',
       'page': '0',
     };
 
-    // // 파라미터 값이 기본값이 아니면 쿼리 파라미터에 추가
-    // if (questActionTypeIndexId != 999) {
-    //   queryParameters['questActionTypeIndexId'] =
-    //       questActionTypeIndexId.toString();
-    // }
-    // if (questType != 99) {
-    //   queryParameters['questType'] = questType.toString();
-    // }
-    // switch (activationStartDateTimeStamp) {
-    //   case 2024:
-    //     queryParameters['activationStartDateTimeStamp'] = '1704034800000';
-    //   case 2025:
-    //     queryParameters['activationStartDateTimeStamp'] = '1735689600000';
-    //   case 2026:
-    //     queryParameters['activationStartDateTimeStamp'] = '1767225600000';
-    // }
-
-    // switch (activationEndDateTimeStamp) {
-    //   case 2025:
-    //     queryParameters['activationEndDateTimeStamp'] = '1735689600000';
-    //   case 2026:
-    //     queryParameters['activationEndDateTimeStamp'] = '1767225600000';
-    //   case 2999:
-    //     break;
-    // }
-
     queryParameters['timeStamp'] =
         DateTime.now().millisecondsSinceEpoch.toString();
 
-    // 개발계에 올릴때 domain으로 수정해야함.
     var url = Uri.http(
       domain,
       '/quest-api/v1/quest-snses/search',
       queryParameters,
     );
 
-    //print('Quest Load Start');
     try {
       var response = await http.get(
         url,
         headers: {
           'SNS_ID': '${userSession?.snsId}',
-          'Cache-Control': 'no-store', // 캐시 방지
-          'Pragma': 'no-store', // 캐시 방지
-          'Expires': '0', // 캐시 방지
+          'Cache-Control': 'no-store',
+          'Pragma': 'no-store',
+          'Expires': '0',
         },
       );
 
@@ -94,15 +73,9 @@ class QuestProvider with ChangeNotifier {
         var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
         List<dynamic> questsData = jsonResponse['content'] as List<dynamic>;
 
-        List<Quest> filteredQuests = questsData
-            .map((data) => Quest.fromJson(data))
-            // .where((quest) =>
-            //     quest.questDetails.questType !=
-            //     QuestType
-            //         .specificType) // QuestType.specificType은 3에 해당하는 enum값으로 가정
-            .toList();
+        List<Quest> filteredQuests =
+            questsData.map((data) => Quest.fromJson(data)).toList();
 
-        // 이후 로직에서는 filteredQuests 리스트를 사용
         _questList = filteredQuests;
         if (_questList.isEmpty) {
           print('Quest is Empty');
@@ -133,49 +106,45 @@ class QuestProvider with ChangeNotifier {
   // 퀘스트 진행사항 업데이트
   Future<void> updateQuest(int actionIndex, int actionTypeDetailIndex,
       int targetTypeIndexId, int targetTypeValueIndexId) async {
-    if (_isLoading) return; // 이미 데이터 로딩 중이라면 중복 실행 방지
+    if (_isLoading) return;
 
     print('Quest Update Start');
     _isLoading = true;
-    notifyListeners(); // 로딩 상태 업데이트
+    notifyListeners();
 
     Map<String, dynamic> queryParameters = {
       'timeStamp': DateTime.now().millisecondsSinceEpoch.toString()
     };
 
-    //var url =
-    //     Uri.parse('https://dev.ktovisitkorea.com/quest-api/v1/quest-snses');
-    //var url = Uri.parse('http://121.126.153.150:8080/quest-api/v1/quest-snses');
     var url = Uri.http(domain, '/quest-api/v1/quest-snses', queryParameters);
 
     try {
       var response = await http.patch(
         url,
         headers: {
-          'Content-Type': 'application/json', // 내용 형식 JSON으로 설정
+          'Content-Type': 'application/json',
           'SNS_ID': '${userSession?.snsId}',
-          'Cache-Control': 'no-store', // 캐시 방지
-          'Pragma': 'no-store', // 캐시 방지
-          'Expires': '0', // 캐시 방지
+          'Cache-Control': 'no-store',
+          'Pragma': 'no-store',
+          'Expires': '0',
         },
         body: json.encode({
           'questActionTypeIndexId': actionIndex,
           "questActionTypeDetailIndexId": actionTypeDetailIndex,
           "questTargetTypeIndexId": targetTypeIndexId,
           "questTargetTypeValueIndexId": targetTypeValueIndexId
-        }), // body를 JSON 문자열로 변환
+        }),
       );
       if (response.statusCode == 200) {
-        refreshQuests(); // 데이터를 새로고침
+        refreshQuests();
       } else {
         print('Failed to update quests. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      // 네트워크 오류 처리
       print('Failed to update quests. Error: $e');
     } finally {
       _isLoading = false;
-      notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+      notifyListeners();
     }
   }
 
@@ -184,7 +153,7 @@ class QuestProvider with ChangeNotifier {
 
     print('Quest registration Start');
     _isLoading = true;
-    notifyListeners(); // 로딩 상태 업데이트
+    notifyListeners();
 
     Map<String, dynamic> queryParameters = {
       'timeStamp': DateTime.now().millisecondsSinceEpoch.toString()
@@ -197,42 +166,39 @@ class QuestProvider with ChangeNotifier {
       var response = await http.post(
         url,
         headers: {
-          'Content-Type': 'application/json', // 내용 형식 JSON으로 설정
+          'Content-Type': 'application/json',
           'SNS_ID': '${userSession?.snsId}',
-          'Cache-Control': 'no-store', // 캐시 방지
-          'Pragma': 'no-store', // 캐시 방지
-          'Expires': '0', // 캐시 방지
-        }, // body를 JSON 문자열로 변환
+          'Cache-Control': 'no-store',
+          'Pragma': 'no-store',
+          'Expires': '0',
+        },
       );
       if (response.statusCode == 201) {
         print('Quest registration success');
-        refreshQuests(); // 데이터를 새로고침
+        refreshQuests();
       } else {
         print(
             'Failed to registration quests. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      // 네트워크 오류 처리
       print('Failed to registration quests. Error: $e');
     } finally {
       _isLoading = false;
-      notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+      notifyListeners();
     }
   }
 
   // 퀘스트 진행사항 초기화 (임시기능)
+  // 테스트용도로 만들어진 메소드 현재는 사용안함.
   Future<void> initializationQuest() async {
-    if (_isLoading) return; // 이미 데이터 로딩 중이라면 중복 실행 방지
+    if (_isLoading) return;
 
     _isLoading = true;
-    notifyListeners(); // 로딩 상태 업데이트
+    notifyListeners();
 
     Map<String, dynamic> queryParameters = {
       'timeStamp': DateTime.now().millisecondsSinceEpoch.toString()
     };
-
-    // var url = Uri.parse(
-    //     'https://dev.ktovisitkorea.com/quest-api/v1/quest-snses/initialization');
 
     var url = Uri.http(
         domain, '/quest-api/v1/quest-snses/initialization', queryParameters);
@@ -242,32 +208,31 @@ class QuestProvider with ChangeNotifier {
         url,
         headers: {
           'SNS_ID': '${userSession?.snsId}',
-          'Cache-Control': 'no-store', // 캐시 방지
-          'Pragma': 'no-store', // 캐시 방지
-          'Expires': '0', // 캐시 방지
-        }, // body를 JSON 문자열로 변환
+          'Cache-Control': 'no-store',
+          'Pragma': 'no-store',
+          'Expires': '0',
+        },
       );
       if (response.statusCode == 200) {
-        refreshQuests(); // 데이터를 새로고침
+        refreshQuests();
       } else {
         print('Failed to update quests. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      // 네트워크 오류 처리
       print('Failed to update quests. Error: $e');
     } finally {
       _isLoading = false;
-      notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+      notifyListeners();
     }
   }
 
   // 배지 수령 처리.
   Future<void> completeQuest(
       BuildContext context, String questSnsId, VoidCallback onSuccess) async {
-    if (_isLoading) return; // 이미 데이터 로딩 중이라면 중복 실행 방지
+    if (_isLoading) return;
 
     _isLoading = true;
-    notifyListeners(); // 로딩 상태 업데이트
+    notifyListeners();
 
     Map<String, dynamic> queryParameters = {
       'timeStamp': DateTime.now().millisecondsSinceEpoch.toString()
@@ -280,9 +245,9 @@ class QuestProvider with ChangeNotifier {
       url,
       headers: {
         'SNS_ID': '${userSession?.snsId}',
-        'Cache-Control': 'no-store', // 캐시 방지
-        'Pragma': 'no-store', // 캐시 방지
-        'Expires': '0', // 캐시 방지
+        'Cache-Control': 'no-store',
+        'Pragma': 'no-store',
+        'Expires': '0',
       },
     );
 
@@ -290,7 +255,7 @@ class QuestProvider with ChangeNotifier {
       // 성공적으로 완료 처리. 수령 확인 알림 표시
       showDialog(
         context: context,
-        barrierDismissible: false, // 사용자가 다이얼로그 바깥을 탭해도 닫히지 않도록 설정
+        barrierDismissible: false,
         builder: (BuildContext context) {
           return CupertinoAlertDialog(
             title: Text(
@@ -307,8 +272,8 @@ class QuestProvider with ChangeNotifier {
                       TextStyle(color: Colors.blue, fontFamily: 'NotoSansKR'),
                 ),
                 onPressed: () {
-                  Navigator.of(context).pop(); // 알럿 닫기
-                  Navigator.of(context).pop(); // 팝업 닫기
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
                   onSuccess();
                 },
               ),
@@ -318,76 +283,16 @@ class QuestProvider with ChangeNotifier {
       );
 
       _isLoading = false;
-      notifyListeners(); // 로딩 상태 업데이트
+      notifyListeners();
     } else {
-      // 오류 내용 출력
       print('Failed to complete quest. Status code: ${response.statusCode}');
       print('Error response body: ${response.body}');
       _isLoading = false;
-      notifyListeners(); // 로딩 상태 업데이트
-    }
-  }
-
-  // 임시로 만든 VIP 배지 수령 처리
-  Future<void> completeVIPQuest() async {
-    if (_isLoading) return; // 이미 데이터 로딩 중이라면 중복 실행 방지
-
-    _isLoading = true;
-    notifyListeners(); // 로딩 상태 업데이트
-
-    Map<String, dynamic> queryParameters = {
-      'timeStamp': DateTime.now().millisecondsSinceEpoch.toString()
-    };
-
-    List<Quest> qusetSNSIDList = questList
-        .where(
-            (quest) => quest.questDetails.questType == QuestType.specificType)
-        .toList();
-
-    var urlList = [];
-
-    for (int i = 0; i < qusetSNSIDList.length; i++) {
-      if (qusetSNSIDList[i].completed == false) {
-        urlList.add(Uri.http(
-            domain,
-            '/quest-api/v1/quest-snses/${qusetSNSIDList[i].questSnsId}/complete',
-            queryParameters));
-      }
-    }
-
-    if (urlList.isEmpty) return;
-
-    final headers = {
-      'SNS_ID': '${userSession?.snsId}',
-      'Cache-Control': 'no-store', // 캐시 방지
-      'Pragma': 'no-store', // 캐시 방지
-      'Expires': '0', // 캐시 방지
-    };
-
-    try {
-      var responses = await Future.wait([
-        for (int i = 0; i < urlList.length; i++) ...[
-          http.patch(urlList[i], headers: headers)
-        ]
-      ]);
-
-      for (int i = 0; i < responses.length; i++) {
-        if (responses[i].statusCode == 200) {
-          print('$i 퀘스트 완료 처리 성공');
-        } else {
-          print('$i 실패');
-        }
-      }
-    } catch (e) {
-      print('VIP 배지 완료 처리를 성공하지 못했습니다');
-    } finally {
-      _isLoading = false;
-      notifyListeners(); // 로딩 상태 업데이트
+      notifyListeners();
     }
   }
 
   Future<void> loadEmptyQuest() async {
-    // 네트워크 오류 처리
     print('Quest Load Fail Load Empty Quest');
     Map<String, dynamic> queryParameters = {
       'timeStamp': DateTime.now().millisecondsSinceEpoch.toString()
@@ -407,31 +312,24 @@ class QuestProvider with ChangeNotifier {
         var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
         List<dynamic> questsData = jsonResponse as List<dynamic>;
 
-        List<Quest> filteredQuests = questsData
-            .map((data) => Quest.fromJson(data))
-            // .where((quest) =>
-            //     quest.questDetails.questType !=
-            //     QuestType
-            //         .specificType) // QuestType.specificType은 3에 해당하는 enum값으로 가정
-            .toList();
-
-        // 이후 로직에서는 filteredQuests 리스트를 사용
+        List<Quest> filteredQuests =
+            questsData.map((data) => Quest.fromJson(data)).toList();
         _questList = filteredQuests;
         print('Quest Load Success');
         isLogin = false;
         _isLoading = false;
-        notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+        notifyListeners();
       } else {
         print('Quest Load Fail Load Empty Quest');
         isLogin = false;
         _isLoading = false;
-        notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+        notifyListeners();
       }
     } catch (e) {
       print('error : $e');
       isLogin = false;
       _isLoading = false;
-      notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+      notifyListeners();
     }
   }
 }
@@ -460,10 +358,6 @@ class BadgeProvider with ChangeNotifier {
       'timeStamp': DateTime.now().millisecondsSinceEpoch.toString()
     };
 
-    // var url = Uri.parse(
-    //     'https://dev.ktovisitkorea.com/quest-api/v1/badge-snses/search?size=300');
-
-    // 개발계에 올릴때 domain으로 수정해야됨.
     var url =
         Uri.http(domain, '/quest-api/v1/badge-snses/search', queryParameters);
     try {
@@ -496,32 +390,26 @@ class BadgeProvider with ChangeNotifier {
           print('설정된 메인배지가 없습니다.');
         }
       } else {
-        // 에러 처리 로직 추가
         print('Failed to load badge. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      // 네트워크 오류 처리
       print('Failed to load badge. Error: $e');
     } finally {
       _isLoading = false;
-      notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+      notifyListeners();
     }
   }
 
   Future<void> refreshBadges() async {
     await _fetchBadge();
-    notifyListeners(); // 데이터 로딩 상태 및 데이터 업데이트
+    notifyListeners();
   }
 
   Badge_completed getMainBadge() {
-    //refreshBadges();
     return _badgeList.where((badge) => badge.isUse).single;
   }
 
   Future<void> setMainBadge(String setBadgeId, VoidCallback onSuccess) async {
-    // var url = Uri.parse(
-    //     'https://dev.ktovisitkorea.com/quest-api/v1/badge-snses/${setBadgeId}/main');
-
     Map<String, dynamic> queryParameters = {
       'timeStamp': DateTime.now().millisecondsSinceEpoch.toString()
     };
@@ -534,9 +422,9 @@ class BadgeProvider with ChangeNotifier {
         url,
         headers: {
           'SNS_ID': '${userSession?.snsId}',
-          'Cache-Control': 'no-store', // 캐시 방지
-          'Pragma': 'no-store', // 캐시 방지
-          'Expires': '0', // 캐시 방지
+          'Cache-Control': 'no-store',
+          'Pragma': 'no-store',
+          'Expires': '0',
         },
       );
 
@@ -551,19 +439,6 @@ class BadgeProvider with ChangeNotifier {
     }
   }
 }
-
-Future<List<Quest>> fetchEmptyQuest() async {
-  String jsonString = await rootBundle.loadString('assets/quest.json');
-  Map<String, dynamic> jsonResponse = jsonDecode(jsonString);
-  List<dynamic> content = jsonResponse['content'];
-
-  return content.map<Quest>((json) => Quest.fromJson(json)).toList();
-}
-
-// var response = await http.get(
-//   url,
-//   headers: {'SNS_ID': '${selectUser?.snsId}'},
-// );
 
 Future<void> fetchSession() async {
   Map<String, dynamic> queryParameters = {
@@ -591,7 +466,10 @@ Future<void> fetchSession() async {
       var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       print(jsonResponse['snsId']);
       // 세션 ID도 필요하면 설정하려고 설정. 현재는 필요없어서 안쓰고있음.
-      userSession = UserSession(sessionId: '', snsId: jsonResponse['snsId']!);
+      if (jsonResponse['snsId'] != null) {
+        userSession = UserSession(sessionId: '', snsId: jsonResponse['snsId']);
+      }
+
       print(userSession?.snsId);
     }
   } catch (e) {
@@ -608,10 +486,6 @@ class RankingProvider with ChangeNotifier {
   RankGroups get groupsInfo => _groupsInfo;
 
   bool get isLoading => _isLoading;
-
-  // RankingProvider() {
-  //   refreshData('M');
-  // }
 
   Future<void> refreshData(String intervalType) async {
     print('RankingRefreshdataStart');
@@ -642,10 +516,6 @@ class RankingProvider with ChangeNotifier {
       'timeStamp': DateTime.now().millisecondsSinceEpoch.toString()
     };
 
-    // var url = Uri.https('dev.ktovisitkorea.com',
-    //     '/quest-api/v1/sns-point-ranks', queryParameters);
-
-    // 개발계 올리기전에 dev로 경로 수정해야함.
     var url =
         Uri.http(domain, '/quest-api/v1/rank-boards/search', queryParameters);
 
@@ -655,9 +525,9 @@ class RankingProvider with ChangeNotifier {
         url,
         headers: {
           'SNS_ID': '${userSession?.snsId}',
-          'Cache-Control': 'no-store', // 캐시 방지
-          'Pragma': 'no-store', // 캐시 방지
-          'Expires': '0', // 캐시 방지
+          'Cache-Control': 'no-store',
+          'Pragma': 'no-store',
+          'Expires': '0',
         },
       );
 
@@ -667,16 +537,12 @@ class RankingProvider with ChangeNotifier {
         _userList = (jsonResponse['content'] as List)
             .map((data) => UserRankingInfo.fromJson(data))
             .toList();
-        _userList.sort((a, b) => a.ranking.compareTo(b.ranking));
         for (int i = 0; i < _userList.length; i++) {
           _userList[i]
               .setMainBadgeName(await getMainBadgeName(userList[i].sns.snsId));
-          // _userList[i]
-          //     .setProfileUrl(await getProfileUrl(userList[i].sns.snsId));
         }
       }
     } catch (e) {
-      // 네트워크 오류 처리
       print('ranking Load Fail');
       print('Error: $e');
     }
@@ -687,7 +553,6 @@ class RankingProvider with ChangeNotifier {
       'intervalType': intervalType,
     };
 
-    // 개발계 올리기전에 dev로 경로 수정해야함.
     var url = Uri.http(
         domain, '/quest-api/v1/rank-groups/latest-rank', queryParameters);
 
@@ -696,9 +561,9 @@ class RankingProvider with ChangeNotifier {
         url,
         headers: {
           'SNS_ID': '${userSession?.snsId}',
-          'Cache-Control': 'no-store', // 캐시 방지
-          'Pragma': 'no-store', // 캐시 방지
-          'Expires': '0', // 캐시 방지
+          'Cache-Control': 'no-store',
+          'Pragma': 'no-store',
+          'Expires': '0',
         },
       );
 
@@ -709,7 +574,6 @@ class RankingProvider with ChangeNotifier {
         print('rankgroups Load Success');
       }
     } catch (e) {
-      // 네트워크 오류 처리
       print('rankgroups Load Fail');
       print('Error: $e');
     }
@@ -722,8 +586,6 @@ class RankingProvider with ChangeNotifier {
 
     var url =
         Uri.http(domain, '/quest-api/v1/badge-snses/main', queryParameters);
-
-    //print('$snsId : 메인배지정보 로드 시작');
 
     try {
       var response = await http.get(
@@ -744,8 +606,6 @@ class RankingProvider with ChangeNotifier {
         return null;
       }
     } catch (e) {
-      //print('Failed to load MainBadge. Error: $e');
-      //print('해당 유저는 메인 배지가 설정되어 있지 않습니다.');
       return null;
     }
   }
@@ -836,9 +696,9 @@ class UserHistoryProvider with ChangeNotifier {
         url,
         headers: {
           'SNS_ID': '${userSession?.snsId}',
-          'Cache-Control': 'no-store', // 캐시 방지
-          'Pragma': 'no-store', // 캐시 방지
-          'Expires': '0', // 캐시 방지
+          'Cache-Control': 'no-store',
+          'Pragma': 'no-store',
+          'Expires': '0',
         },
       );
 
@@ -873,28 +733,27 @@ class UserHistoryProvider with ChangeNotifier {
 }
 
 class UserInfoProvider with ChangeNotifier {
-  late UserInfo _userInfo;
-  late int _point;
+  UserInfo? _userInfo;
+  int? _point;
   bool _isLoading = false;
 
-  UserInfo get userInfo => _userInfo;
-  int get userPoint => _point;
+  UserInfo get userInfo => _userInfo!;
+  int get userPoint => _point!;
   bool get isLoading => _isLoading;
 
   UserInfoProvider() {
-    _fetchUserInfo();
+    fetchUserInfo();
   }
 
   Future<void> refreshData() async {
     _isLoading = false;
-    await _fetchUserInfo();
-    notifyListeners();
+    await fetchUserInfo();
   }
 
-  Future<void> _fetchUserInfo() async {
+  Future<void> fetchUserInfo() async {
     if (_isLoading) return;
     _isLoading = true;
-    notifyListeners(); // 로딩 상태 업데이트
+    notifyListeners();
 
     Map<String, dynamic> queryParameters = {
       'timeStamp': DateTime.now().millisecondsSinceEpoch.toString(),
@@ -906,9 +765,9 @@ class UserInfoProvider with ChangeNotifier {
 
     final headers = {
       'SNS_ID': '${userSession?.snsId}',
-      'Cache-Control': 'no-store', // 캐시 방지
-      'Pragma': 'no-store', // 캐시 방지
-      'Expires': '0', // 캐시 방지
+      'Cache-Control': 'no-store',
+      'Pragma': 'no-store',
+      'Expires': '0',
     };
 
     try {
@@ -924,18 +783,20 @@ class UserInfoProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
         _userInfo = UserInfo.fromJson(jsonResponse);
+        print('userinfo 로드 성공');
       }
 
       if (pointResponse.statusCode == 200) {
         var jsonResponse = jsonDecode(utf8.decode(pointResponse.bodyBytes));
         _point = jsonResponse['totalPoint'];
+        print('point 로드 성공');
       }
     } catch (e) {
       print('사용자 정보를 찾을 수 없습니다.');
       print('Error $e');
     } finally {
       _isLoading = false;
-      notifyListeners(); // 로딩 상태 업데이트
+      notifyListeners();
     }
   }
 }
@@ -947,19 +808,16 @@ class UserPrivacyInfoProvider with ChangeNotifier {
   UserPrivacyInfo get userPrivacyInfo => _userPrivacyInfo;
   bool get isLoading => _isLoading;
 
-  UserPrivacyInfoProvider() {
-    fetchUserPrivacyInfo();
-  }
+  // UserPrivacyInfoProvider() {
+  //   fetchUserPrivacyInfo();
+  // }
 
   Future<void> refreshData() async {
     _isLoading = false;
     await fetchUserPrivacyInfo();
-    notifyListeners();
+    //notifyListeners();
   }
 
-  /// 사용자 개인정보 조회
-  ///
-  /// Get http://dev.ktovisitkorea.com/quest-api/v1/sns-quest-infos
   Future<void> fetchUserPrivacyInfo() async {
     if (_isLoading) return;
 
@@ -978,9 +836,9 @@ class UserPrivacyInfoProvider with ChangeNotifier {
         url,
         headers: {
           'SNS_ID': '${userSession?.snsId}',
-          'Cache-Control': 'no-store', // 캐시 방지
-          'Pragma': 'no-store', // 캐시 방지
-          'Expires': '0', // 캐시 방지
+          'Cache-Control': 'no-store',
+          'Pragma': 'no-store',
+          'Expires': '0',
         },
       );
 
@@ -989,7 +847,7 @@ class UserPrivacyInfoProvider with ChangeNotifier {
         _userPrivacyInfo = UserPrivacyInfo.fromJson(jsonResponse);
         print('로드 성공');
         _isLoading = false;
-        notifyListeners(); // 로딩 상태 업데이트
+        notifyListeners();
       } else {
         if (userSession != null) {
           _isLoading = false;
@@ -1008,25 +866,14 @@ class UserPrivacyInfoProvider with ChangeNotifier {
         isBadgeTesterMode: false,
       );
       _isLoading = false;
-      notifyListeners(); // 로딩 상태 업데이트
+      notifyListeners();
     } finally {
-      // _userPrivacyInfo = UserPrivacyInfo(
-      //   snsQuestInfoId: '',
-      //   isEventAgree: false,
-      //   isPrivacyAgree: false,
-      //   name: '',
-      //   phoneNumber: '',
-      //   isExposeRank: false,
-      //   isBadgeTesterMode: false,
-      // );
       _isLoading = false;
-      notifyListeners(); // 로딩 상태 업데이트
+      notifyListeners();
     }
   }
 
   /// 사용자 개인정보 등록
-  ///
-  /// Post http://dev.ktovisitkorea.com/quest-api/v1/sns-quest-infos
   Future<void> createData() async {
     if (_isLoading) return;
 
@@ -1046,9 +893,9 @@ class UserPrivacyInfoProvider with ChangeNotifier {
         headers: {
           'Content-Type': 'application/json',
           'SNS_ID': '${userSession?.snsId}',
-          'Cache-Control': 'no-store', // 캐시 방지
-          'Pragma': 'no-store', // 캐시 방지
-          'Expires': '0', // 캐시 방지
+          'Cache-Control': 'no-store',
+          'Pragma': 'no-store',
+          'Expires': '0',
         },
         body: json.encode({
           'Content-Type': 'application/json',
@@ -1074,8 +921,6 @@ class UserPrivacyInfoProvider with ChangeNotifier {
   }
 
   /// 사용자 개인정보 수정
-  ///
-  /// Patch http://dev.ktovisitkorea.com/quest-api/v1/sns-quest-infos
   Future<void> updateData(UserPrivacyInfo info, VoidCallback onSucsses) async {
     if (_isLoading) return;
 
@@ -1095,35 +940,34 @@ class UserPrivacyInfoProvider with ChangeNotifier {
       var response = await http.patch(
         url,
         headers: {
-          'Content-Type': 'application/json', // 내용 형식 JSON으로 설정
+          'Content-Type': 'application/json',
           'SNS_ID': '${userSession?.snsId}',
-          'Cache-Control': 'no-store', // 캐시 방지
-          'Pragma': 'no-store', // 캐시 방지
-          'Expires': '0', // 캐시 방지
+          'Cache-Control': 'no-store',
+          'Pragma': 'no-store',
+          'Expires': '0',
         },
         body: json.encode({
           "isPrivacyAgree": info.isPrivacyAgree,
           "name": info.name,
           "phoneNumber": info.phoneNumber
-        }), // body를 JSON 문자열로 변환
+        }),
       );
       if (response.statusCode == 200) {
-        refreshData(); // 데이터를 새로고침
+        refreshData();
         print('Success to update userPrivacyInfo');
         _isLoading = false;
-        notifyListeners(); // 로딩 상태 업데이트
+        notifyListeners();
         onSucsses();
       } else {
         print(
             'Failed to update userPrivacyInfo. StatusCode: ${response.statusCode}');
         _isLoading = false;
-        notifyListeners(); // 로딩 상태 업데이트
+        notifyListeners();
       }
     } catch (e) {
-      // 네트워크 오류 처리
       print('Failed to update userPrivacyInfo. Error: $e');
       _isLoading = false;
-      notifyListeners(); // 로딩 상태 업데이트
+      notifyListeners();
     }
   }
 }
@@ -1149,7 +993,7 @@ class EventBannerProvider with ChangeNotifier {
     if (_isLoading) return;
 
     _isLoading = true;
-    notifyListeners(); // 로딩 상태 업데이트
+    notifyListeners();
 
     Map<String, dynamic> queryParameters = {
       'timeStamp': DateTime.now().millisecondsSinceEpoch.toString(),
@@ -1158,9 +1002,9 @@ class EventBannerProvider with ChangeNotifier {
     var url = Uri.http(domain, '/quest-api/v1/event-banners', queryParameters);
 
     final headers = {
-      'Cache-Control': 'no-store', // 캐시 방지
-      'Pragma': 'no-store', // 캐시 방지
-      'Expires': '0', // 캐시 방지
+      'Cache-Control': 'no-store',
+      'Pragma': 'no-store',
+      'Expires': '0',
     };
 
     try {
@@ -1170,13 +1014,13 @@ class EventBannerProvider with ChangeNotifier {
         var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
         _bannerInfo = BannerInfo.fromJson(jsonResponse);
         _isLoading = false;
-        notifyListeners(); // 로딩 상태 업데이트
+        notifyListeners();
       }
     } catch (e) {
       print('EventBannerInfo Load Error $e');
       _bannerInfo = BannerInfo(id: '', commonBanner: false, subBanner: false);
       _isLoading = false;
-      notifyListeners(); // 로딩 상태 업데이트
+      notifyListeners();
     }
   }
 }
